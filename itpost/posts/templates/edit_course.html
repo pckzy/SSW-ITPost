@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% load custom_filter %}
+
+{% block title %}แก้ไขคอร์ส - ITPost{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+
+    <div id="coursesContent" class="space-y-6">
+        <div class="rounded-xl shadow-lg overflow-hidden">
+            <div class="bg-blue-600 p-8 text-white">
+                <h2 class="text-2xl font-bold mb-2">แก้ไขคอร์ส</h2>
+                <p class="text-blue-100">แก้ไขข้อมูลของคอร์ส</p>
+            </div>
+
+            <div class="transition-all duration-500" id="course-form">
+
+                <form action="{% url 'course_edit_view' course_id %}" method="post" class="bg-white space-y-6 p-8">
+                    {% csrf_token %}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <div class="flex justify-between">
+                                <label class="block text-md font-medium text-gray-700 mb-2">รหัสวิชา <span
+                                        class="text-red-500">*</span></label>
+                                <span class="text-red-600 text-sm">{{ course_form.course_code.errors.0 }}</span>
+                            </div>
+                            {{ course_form.course_code }}
+                        </div>
+                        <div>
+                            <label class="block text-md font-medium text-gray-700 mb-2">ชื่อวิชา <span
+                                    class="text-red-500">*</span></label>
+                            {{ course_form.course_name }}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-md font-medium text-gray-700 mb-2">คำอธิบายรายวิชา</label>
+                        {{ course_form.description }}
+                    </div>
+
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-md font-medium text-gray-700 mb-2">ชั้นปีที่สามารถลงทะเบียน</label>
+                            {{ course_form.allowed_years }}
+                        </div>
+                        <div>
+                            <label class="block text-md font-medium text-gray-700 mb-2">สาขาที่สามารถลงทะเบียน</label>
+                            {{ course_form.allowed_majors }}
+                        </div>
+                        <div class="col-span-3 md:col-span-1">
+                            <label class="block text-md font-medium text-gray-700 mb-2">แขนงที่สามารถลงทะเบียน</label>
+                            {{ course_form.allowed_specializations }}
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row gap-3 pt-4">
+                        <button type="submit" class="flex-1 bg-blue-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-600 transition-all">
+                            ยืนยันการแก้ไข
+                        </button>
+                        <a href="{% url 'back' %}" class="flex-1 sm:flex-none bg-gray-100 text-gray-700 px-6 py-3 rounded-lg font-medium hover:bg-gray-200 transition-all text-center">
+                            ยกเลิก
+                        </a>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script%}
+{% endblock %}

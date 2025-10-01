@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.views import View
 
 from django.contrib.auth import login, logout
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.auth.models import User, Group
 
 from .models import *
@@ -15,12 +15,87 @@ def get_user_context(user):
         'group': group,
     }
 
+def back(request):
+    return redirect(request.session.get('return_to', '/'))
 
 class MainView(LoginRequiredMixin, View):
     def get(self, request):
         context = get_user_context(request.user)
-        return render(request, 'base.html', context)
+        user = request.user
+
+        if user.groups.filter(name="Professor").exists():
+            return redirect('manage_course_view')
+        elif user.groups.filter(name="Student").exists():
+            return render(request, 'student_page.html', context)
+        else:
+            return render(request, 'base.html', context)
+        
+
+class ManageCourseView(LoginRequiredMixin, PermissionRequiredMixin, View):
+    permission_required = 'posts.add_course'
+
+    def get(self, request):
+        request.session['return_to'] = request.path
+        context = get_user_context(request.user)
+        course_lists = Course.objects.filter(created_by=request.user)
+
+        course_form = CourseForm()
+
+        context['course_form'] = course_form
+        context['course_lists'] = course_lists
+
+        return render(request, 'professor_page.html', context)
     
+    def post(self, request):
+        context = get_user_context(request.user)
+        course_form = CourseForm(request.POST)
+
+        if course_form.is_valid():
+            course = course_form.save(commit=False)
+            course.created_by = request.user
+            course.save()
+            course_form.save_m2m()
+            return redirect('manage_course_view')
+        
+        course_lists = Course.objects.filter(created_by=request.user)
+        context['course_form'] = course_form
+        context['course_lists'] = course_lists
+
+        return render(request, 'professor_page.html', context)
+
+class EditCourseView(LoginRequiredMixin, PermissionRequiredMixin, View):
+    permission_required = 'posts.change_course'
+
+    def get(self, request, course_id):
+        user = request.user
+        context = get_user_context(request.user)
+        course = Course.objects.get(pk=course_id)
+
+        if course.created_by == user:
+            course_form = CourseForm(instance=course)
+            context['course_form'] = course_form
+            context['course_id'] = course_id
+            return render(request, 'edit_course.html', context)
+        
+        return redirect('back')
+    
+    def post(self, request, course_id):
+        user = request.user
+        context = get_user_context(request.user)
+        course = Course.objects.get(pk=course_id)
+        course_form = CourseForm(request.POST, instance=course)
+
+        if course.created_by == user:
+            if course_form.is_valid():
+                course_form.save()
+                return redirect('manage_course_view')
+            
+            context['course_form'] = course_form
+            context['course_id'] = course_id
+            return render(request, 'edit_course.html', context)
+        
+        return redirect('/')
+
 
 class LoginView(View):
     def get(self, request):
@@ -30,8 +105,9 @@ class LoginView(View):
     def post(self, request):
         form = CustomAuthenticationForm(request, data=request.POST)
         if form.is_valid():
+            next_url = request.GET.get('next') or '/'
             login(request, form.get_user())
-            return redirect('/')
+            return redirect(next_url)
 
 
         return render(request,'login_page.html', {"form":form})
@@ -72,8 +148,6 @@ class RegisterView(View):
             print(form.errors)
             print(academic_form.errors)
 
-
-        
         context = {
             'form': form,
             'academic_form': academic_form

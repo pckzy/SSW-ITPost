@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% load custom_filter %}
+
+{% block title %}จัดการคอร์สและประกาศ - ITPost{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+
+    <div class="bg-white rounded-xl shadow-lg mb-6 p-2">
+        <div class="flex flex-wrap gap-2">
+            <button onclick="showTab('courses')" id="coursesTab"
+                class="tab-btn flex-1 sm:flex-none px-6 py-3 rounded-lg bg-blue-600 text-white font-medium transition-all">
+                <div class="flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-book-open"></i>
+                    <span>จัดการคอร์ส</span>
+                </div>
+            </button>
+            <button onclick="showTab('announcements')" id="announcementsTab"
+                class="tab-btn flex-1 sm:flex-none px-6 py-3 rounded-lg bg-gray-100 text-gray-700 font-medium transition-all hover:bg-gray-200">
+                <div class="flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-bullhorn"></i>
+                    <span>สร้างประกาศ</span>
+                </div>
+            </button>
+        </div>
+    </div>
+
+
+    <div id="coursesContent" class="space-y-6">
+        <div class="rounded-xl shadow-lg overflow-hidden">
+            <div class="bg-blue-600 p-8 text-white">
+                <h2 class="text-2xl font-bold mb-2">เพิ่มคอร์สใหม่</h2>
+                <p class="text-blue-100 mb-6">สร้างคอร์สเรียนใหม่เพื่อประกาศข้อมูลให้นักศึกษา</p>
+                <button onclick="toggleCourseForm()"
+                    class="bg-white text-blue-600 px-6 py-3 rounded-lg font-medium hover:bg-blue-50 transition-all flex items-center space-x-2">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>สร้างคอร์สใหม่</span>
+                </button>
+            </div>
+
+            <div class="transition-all duration-500 {% if course_form.errors %}0max-h-[1000px]{% else %}max-h-0{% endif %}" id="course-form">
+
+                <form action="{% url 'manage_course_view' %}" method="post" class="bg-white space-y-6 p-8">
+                    {% csrf_token %}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <div class="flex justify-between">
+                                <label class="block text-md font-medium text-gray-700 mb-2">รหัสวิชา <span
+                                        class="text-red-500">*</span></label>
+                                <span class="text-red-600 text-sm">{{ course_form.course_code.errors.0 }}</span>
+                            </div>
+                            {{ course_form.course_code }}
+                        </div>
+                        <div>
+                            <label class="block text-md font-medium text-gray-700 mb-2">ชื่อวิชา <span
+                                    class="text-red-500">*</span></label>
+                            {{ course_form.course_name }}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-md font-medium text-gray-700 mb-2">คำอธิบายรายวิชา</label>
+                        {{ course_form.description }}
+                    </div>
+
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-md font-medium text-gray-700 mb-2">ชั้นปีที่สามารถลงทะเบียน</label>
+                            {{ course_form.allowed_years }}
+                        </div>
+                        <div>
+                            <label class="block text-md font-medium text-gray-700 mb-2">สาขาที่สามารถลงทะเบียน</label>
+                            {{ course_form.allowed_majors }}
+                        </div>
+                        <div class="col-span-3 md:col-span-1">
+                            <label class="block text-md font-medium text-gray-700 mb-2">แขนงที่สามารถลงทะเบียน</label>
+                            {{ course_form.allowed_specializations }}
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row gap-3 pt-4">
+                        <button type="submit"
+                            class="flex-1 bg-blue-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-600 transition-all">
+                            สร้างคอร์ส
+                        </button>
+                        <button type="button" onclick="toggleCourseForm()"
+                            class="flex-1 sm:flex-none bg-gray-100 text-gray-700 px-6 py-3 rounded-lg font-medium hover:bg-gray-200 transition-all">
+                            ยกเลิก
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="coursesList">
+
+            {% for c in course_lists %}
+            <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all overflow-hidden border-t-4 border-blue-500">
+                <div class="p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full">{{ c.course_code }}</span>
+                        <button class="text-gray-400 hover:text-gray-600"></button>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">{{ c.course_name }}</h3>
+                    <p class="text-gray-600 text-sm mb-4">{{ c.description }}</p>
+
+                    <div class="flex items-center justify-between mb-4 text-sm text-gray-500">
+                        <div class="flex items-center space-x-1">
+                            <i class="fa-regular fa-circle-user"></i>
+                            <span>{{ c.student_count }} คน</span>
+                        </div>
+                        <div class="flex items-center space-x-1">
+                            <i class="fa-solid fa-bullhorn"></i>
+                            <span>{{ c.post_count }} ประกาศ</span>
+                        </div>
+                    </div>
+
+                    <div class="flex space-x-2">
+                        <button class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all text-sm font-medium">
+                            ดูรายละเอียด
+                        </button>
+                        <a href="{% url 'course_edit_view' c.id %}" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all">
+                            <i class="fa-regular fa-pen-to-square text-gray-600"></i>
+                        </a>
+                        <button class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all">
+                            <i class="fa-regular fa-trash-can text-red-600"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+
+
+{% block script%}
+<script>
+    function toggleCourseForm() {
+        const formDiv = document.getElementById('course-form')
+        if (formDiv.classList.contains('max-h-0')) {
+            formDiv.classList.remove('max-h-0')
+            formDiv.classList.add('max-h-[1000px]')
+        } else {
+            formDiv.classList.add('max-h-0')
+            formDiv.classList.remove('max-h-[1000px]')
+        }
+    }
+</script>
+{% endblock %}

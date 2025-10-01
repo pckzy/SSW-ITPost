@@ -1,16 +1,28 @@
 {% load static %}
 
+{% load custom_filter %}
+
 <nav class="bg-white shadow-md sticky top-0 z-50">
     <div class="container mx-auto px-4 py-4">
         <div class="flex items-center justify-between">
             <div class="flex items-center space-x-3">
-                <div class="bg-blue-600 p-2 rounded-lg">
-                    <i class="fa fa-bullhorn text-2xl text-white"></i>
-                </div>
-                <a href="/">
-                    <h1 class="text-2xl font-bold text-gray-800">เว็บรวมประกาศคณะไอที</h1>
-                    <p class="text-sm text-gray-500">IT Faculty Announcement Website</p>
-                </a>
+                {%  if user|in_group:"Student" %}
+                    <div class="bg-blue-600 p-3 px-4 rounded-lg">
+                        <i class="fa fa-bullhorn text-2xl text-white"></i>
+                    </div>
+                    <a href="/">
+                        <h1 class="text-2xl font-semibold text-gray-800">เว็บรวมประกาศคณะไอที</h1>
+                        <p class="text-sm text-gray-500">IT Faculty Announcement Website</p>
+                    </a>
+                {% elif user|in_group:"Professor" %}
+                    <div class="bg-blue-600 p-3 px-4 rounded-lg">
+                        <i class="fa-solid fa-book-open text-2xl text-white"></i>
+                    </div>
+                    <a href="/">
+                        <h1 class="text-2xl font-semibold text-gray-800">ระบบจัดการคอร์สและประกาศ</h1>
+                        <p class="text-sm text-gray-500">สำหรับอาจารย์</p>
+                    </a>
+                {% endif %}
             </div>
             <div class="flex items-center space-x-4">
                 <button class="md:hidden p-2 rounded-lg hover:bg-gray-100" onclick="toggleBar()">

@@ -95,3 +95,26 @@ class AcademicInfoForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['major'].empty_label = "-- เลือกสาขา --"
         self.fields['specialization'].empty_label = "-- เลือกแขนง --"
+
+
+class CourseForm(forms.ModelForm):
+    class Meta:
+        model = Course
+        fields = [
+            'course_code', 'course_name', 'description', 'allowed_years', 'allowed_majors', 'allowed_specializations',
+        ]
+        widgets = {
+            'course_code': forms.TextInput(attrs={'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500', 'placeholder':'เช่น CS101'}),
+            'course_name': forms.TextInput(attrs={'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500', 'placeholder':'เช่น Computer Programming'}),
+            'description': forms.Textarea(attrs={'rows': 3, 'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500', 'placeholder':'รายละเอียดเกี่ยวกับรายวิชา...'}),
+            'allowed_years': forms.SelectMultiple(attrs={'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500', 'size': '5'}),
+            'allowed_majors': forms.SelectMultiple(attrs={'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500', 'size': '5'}),
+            'allowed_specializations': forms.SelectMultiple(attrs={'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500', 'size': '5'})
+        }
+
+    def clean_course_code(self):
+        code = self.cleaned_data.get('course_code')
+        if Course.objects.filter(course_code__iexact=code).exists():
+            raise forms.ValidationError("รหัสวิชานี้มีอยู่แล้วในระบบ")
+        return code
+
