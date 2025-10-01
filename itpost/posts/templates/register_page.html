@@ -1,0 +1,144 @@
+{% extends 'auth_base.html' %}
+
+{% load static %}
+
+{% block title %}สมัครสมาชิก - ITPost{% endblock %}
+
+{% block content %}
+<div class="flex justify-center items-center gap-2 mb-4">
+    <div class="">
+        <img src="{{ MEDIA_URL }}logo.png" class="w-[80px] object-cover" alt="Logo">
+    </div>
+    <div class="">
+        <h3 class="text-3xl font-bold text-gray-900">กรอกข้อมูลของคุณ</h3>
+    </div>
+</div>
+
+<form action="{% url 'register_view' %}" method="post" class="space-y-6">
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+        {{ form.non_field_errors }}
+    </div>
+    {% endif %}
+
+    <div class="grid grid-cols-2 gap-4">
+        <div>
+            <label for="{{ form.first_name.id_for_label }}" class="block text-sm font-medium text-gray-700">ชื่อ</label>
+            <div class="mt-1">
+                {{ form.first_name }}
+            </div>
+        </div>
+
+        <div>
+            <label for="{{ form.last_name.id_for_label }}"
+                class="block text-sm font-medium text-gray-700">นามสกุล</label>
+            <div class="mt-1">
+                {{ form.last_name }}
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <div class="flex justify-between">
+            <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-gray-700">อีเมล</label>
+            <span class="text-red-600 text-sm">{{ form.email.errors }}</span>
+        </div>
+        <div class="mt-1">
+            {{ form.email }}
+        </div>
+    </div>
+
+    <div>
+        <div class="flex justify-between">
+            <label for="{{ form.username.id_for_label }}" class="block text-sm font-medium text-gray-700">ชื่อผู้ใช้</label>
+            <span class="text-red-600 text-sm">{{ form.username.errors }}</span>
+        </div>
+        <div class="mt-1">
+            {{ form.username }}
+        </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+        <div>
+            <label for="{{ form.password1.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                รหัสผ่าน
+            </label>
+            <div class="mt-1">
+                {{ form.password1 }}
+            </div>
+        </div>
+    
+        <div>
+            <label for="{{ form.password2.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                ยืนยันรหัสผ่าน
+            </label>
+            <div class="mt-1">
+                {{ form.password2 }}
+            </div>
+        </div>
+    </div>
+    {% if form.password2.errors %}
+    <span class="text-red-600 text-sm flex justify-end -mt-4">{{ form.password2.errors.0 }}</span>
+    {% endif %}
+
+    <div class="grid grid-cols-2 gap-4">
+        <div>
+            <label for="{{ academic_form.year.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                ชั้นปี
+            </label>
+            <div class="mt-1">
+                {{ academic_form.year }}
+            </div>
+            {% if academic_form.year.errors %}
+            <div class="text-red-600 text-sm mt-1">{{ academic_form.year.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <div>
+            <label for="{{ academic_form.major.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                สาขา
+            </label>
+            <div class="mt-1">
+                {{ academic_form.major }}
+            </div>
+            {% if academic_form.major.errors %}
+            <div class="text-red-600 text-sm mt-1">{{ academic_form.major.errors.0 }}</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div id="specialization-div" style="display:none;">
+        <label for="{{ academic_form.specialization.id_for_label }}" class="block text-sm font-medium text-gray-700">แขนง</label>
+        <div class="mt-1">
+            {{ academic_form.specialization }}
+        </div>
+    </div>
+
+    <div>
+        <button type="submit"
+            class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-200">
+            สร้างบัญชี
+        </button>
+    </div>
+
+    <div class="text-center">
+        <p class="text-sm text-gray-600">
+            มีบัญชีอยู่แล้ว?
+            <a href="{% url 'login_view' %}" class="font-medium text-green-600 hover:text-green-500 ml-1">
+                เข้าสู่ระบบ
+            </a>
+        </p>
+    </div>
+</form>
+{% endblock %}
+
+{% block script%}
+<script>
+    const yearId = "{{ academic_form.year.id_for_label }}";
+    const majorId = "{{ academic_form.major.id_for_label }}";
+    const specializationId = "{{ academic_form.specialization.id_for_label }}";
+</script>
+<script src="{% static '/js/auth.js' %}"></script>
+<script src="{% static '/js/register.js' %}"></script>
+{% endblock %}

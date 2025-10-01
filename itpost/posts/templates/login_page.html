@@ -1,0 +1,67 @@
+{% extends 'auth_base.html' %}
+
+{% load static %}
+
+{% block title %}เข้าสู่ระบบ - ITPost{% endblock %}
+
+{% block content %}
+<div class="text-center mb-8 mt-14">
+    <div class="absolute -top-35 left-1/2 transform -translate-x-1/2">
+        <img src="{{ MEDIA_URL}}logo.png" alt="" class="w-[50vh]">
+    </div>
+    <h2 class="text-3xl font-bold text-gray-900">เข้าสู่ระบบ</h2>
+</div>
+
+<form action="{% url 'login_view' %}" method="post" class="space-y-6">
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+        {{ form.non_field_errors }}
+    </div>
+    {% endif %}
+
+    <div>
+        <label for="{{ form.username.id_for_label }}" class="block text-sm font-medium text-gray-700">
+            ชื่อผู้ใช้งาน
+        </label>
+        <div class="mt-1">
+            {{ form.username }}
+        </div>
+        {% if form.username.errors %}
+        <div class="text-red-600 text-sm mt-1">{{ form.username.errors.0 }}</div>
+        {% endif %}
+    </div>
+
+    <div>
+        <label for="{{ form.password.id_for_label }}" class="block text-sm font-medium text-gray-700">
+            รหัสผ่าน
+        </label>
+        <div class="mt-1">
+            {{ form.password }}
+        </div>
+        {% if form.password.errors %}
+        <div class="text-red-600 text-sm mt-1">{{ form.password.errors.0 }}</div>
+        {% endif %}
+    </div>
+
+    <div>
+        <button type="submit"
+            class="w-full flex justify-center mt-10 py-4 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200">
+            เข้าสู่ระบบ
+        </button>
+    </div>
+
+    <div class="text-center">
+        <p class="text-sm text-gray-600">
+            ยังไม่มีบัญชี?
+            <a href="{% url 'register_view' %}" class="font-medium text-blue-600 hover:text-blue-500 ml-1">
+                สมัครสมาชิก
+            </a>
+        </p>
+    </div>
+</form>
+{% endblock %}
+
+{% block script%}
+<script src="{% static '/js/auth.js' %}"></script>
+{% endblock %}
