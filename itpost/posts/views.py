@@ -3,14 +3,23 @@ from django.views import View
 
 from django.contrib.auth import login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 
 from .models import *
 from .forms import *
 
+def get_user_context(user):
+    group = user.groups.first()
+    return {
+        'user': user,
+        'group': group,
+    }
+
+
 class MainView(LoginRequiredMixin, View):
     def get(self, request):
-        return render(request, 'base.html')
+        context = get_user_context(request.user)
+        return render(request, 'base.html', context)
     
 
 class LoginView(View):
@@ -31,6 +40,9 @@ def logout_view(request):
     logout(request)
     return redirect('login_view')
 
+def test_view(request):
+    return render(request, 'test.html')
+
 class RegisterView(View):
     def get(self, request):
         form = CustomUserCreationForm()
@@ -45,10 +57,11 @@ class RegisterView(View):
     def post(self, request):
         form = CustomUserCreationForm(request.POST)
         academic_form = AcademicInfoForm(request.POST)
-        print('we check first yay')
         if form.is_valid() and academic_form.is_valid():
-            print('we valid yay')
             user = form.save()
+
+            student_group = Group.objects.get(name='Student')
+            user.groups.add(student_group)
 
             academic = academic_form.save(commit=False)
             academic.user = user

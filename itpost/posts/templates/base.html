@@ -6,10 +6,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'dist/styles.css' %}">
-    <title>{% block title %}IT Post{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>{% block title %}ITPost{% endblock %}</title>
     {% block head %}{% endblock %}
 </head>
-<body class="font-prompt bg-gray-50">
-    <h1>TESTdwadwadwad</h1>
+<body class="font-prompt bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+
+    {% block navbar %}
+        {% include 'navbar.html' %}
+    {% endblock %}
+    
+    
+    {% block content %}
+
+    {% endblock %}
+    
+    
+    
+    {% block script %}{% endblock %}
 </body>
 </html>
