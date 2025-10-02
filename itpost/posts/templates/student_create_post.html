@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% load custom_filter %}
+
+{% block title %}สร้างโพสต์ - ITPost{% endblock %}
+
+{% block navbar %}
+    {% include 'navbar.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+
+            <form action="" method="post" class="space-y-6" enctype="multipart/form-data">
+                <div class="bg-white rounded-xl shadow-lg p-8 mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center space-x-2">
+                        <i class="fa-regular fa-eye text-blue-600 pr-2"></i>
+                        <span>กำหนดผู้มีสิทธิ์เห็นประกาศ</span>
+                    </h2>
+
+                    <div class="space-y-6">
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-md font-medium text-gray-700 mb-2">ชั้นปี</label>
+                                {{ form.years }}
+                            </div>
+                            <div>
+                                <label class="block text-md font-medium text-gray-700 mb-2">สาขา</label>
+                                {{ form.majors }}
+                            </div>
+                            <div class="col-span-3 md:col-span-1">
+                                <label class="block text-md font-medium text-gray-700 mb-2">แขนง</label>
+                                {{ form.specializations }}
+                            </div>
+                        </div>
+
+                        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+                            <div class="flex items-center space-x-2">
+                                <i class="fa-solid fa-circle-info text-blue-600"></i>
+                                <p class="text-sm text-blue-800">ไม่เลือกหมายความว่า <span class="underline font-semibold">ทุกคน</span> มีสิทธิ์เห็นประกาศนี้</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                
+
+
+                <div class="bg-white rounded-xl shadow-lg p-8 mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center space-x-2">
+                        <i class="fa-solid fa-bullhorn text-blue-600 pr-2"></i>
+                        <span>รายละเอียดประกาศ</span>
+                    </h2>
+
+                    {% csrf_token %}
+                    <div class="space-y-6">
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">ประเภทประกาศ <span class="text-red-500">*</span></label>
+                            {{ form.post_type }}
+                        </div>
+                            
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">หัวข้อประกาศ <span class="text-red-500">*</span></label>
+                            {{ form.title }}
+                                
+                        </div>
+                            
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">เนื้อหาประกาศ</label>
+                            {{ form.content }}
+                        </div>
+    
+                        <div class="">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">ไฟล์ประกอบ (ถ้ามี)</label>
+                            <input type="file" name="files"
+                                class="w-full file:mr-3 file:py-2 file:px-4 hover:file:bg-gray-700 text-md rounded-md file:bg-gray-800 file:text-white border border-gray-200"
+                                multiple>
+                        </div>
+
+                        <div class="flex">
+                            <label class="block text-sm font-medium text-gray-700 pr-3">ประกาศแบบไม่ระบุตัวตน</label>
+                           {{ form.annonymous }}
+                        </div>
+    
+                        <div class="flex flex-col sm:flex-row gap-3 pt-4">
+                            <button type="submit" class="flex-1 bg-blue-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-all">
+                                สร้างประกาศ
+                            </button>
+                            <a href="{% url 'back' %}" class="flex-1 sm:flex-none bg-gray-100 text-gray-700 px-6 py-3 rounded-lg font-medium hover:bg-gray-200 transition-all text-center">
+                                ยกเลิก
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+</div>
+{% endblock %}
+
+{% block script%}
+{% endblock %}

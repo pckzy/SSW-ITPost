@@ -147,3 +147,25 @@ class ProfessorPostForm(forms.ModelForm):
 
         if user:
             self.fields['course'].queryset = Course.objects.filter(created_by=user)
+
+
+class StudentPostForm(forms.ModelForm):
+    class Meta:
+        model = Post
+        fields = [
+            'title', 'content', 'post_type', 'years', 'majors', 'specializations', 'annonymous'
+        ]
+        widgets = {
+            'post_type': forms.Select(attrs={'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'}),
+            'title': forms.TextInput(attrs={'placeholder':'เช่น หาสมาชิกเข้ากลุ่มโปรเจค', 'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'}),
+            'content': forms.Textarea(attrs={'rows': 6, 'placeholder':'รายละเอียดประกาศ...', 'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'}),
+            'years': forms.SelectMultiple(attrs={'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500', 'size': '5'}),
+            'majors': forms.SelectMultiple(attrs={'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500', 'size': '5'}),
+            'specializations': forms.SelectMultiple(attrs={'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500', 'size': '5'})
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields['post_type'].empty_label = "-- เลือกชนิดของประกาศ --"
+        self.fields['post_type'].queryset = PostType.objects.filter(for_course=False)

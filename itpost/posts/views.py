@@ -4,7 +4,7 @@ from django.views import View
 from django.contrib.auth import login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.auth.models import User, Group
-from django.db.models import Q, OuterRef, Subquery
+from django.db.models import Q, OuterRef, Subquery, Exists
 
 
 from .models import *
@@ -43,12 +43,28 @@ class StudentView(LoginRequiredMixin, View):
         context = get_user_context(request.user)
         user = request.user
 
+        posts = Post.objects.all()
+
+        filter = request.GET.get('filter')
+        if filter:
+            posts = posts.filter(post_type__id=filter)
+
         enrolled_courses = Course.objects.filter(
             enrollments__student=request.user,
             enrollments__is_approved=True
         ).distinct()
         context['enrolled_courses'] = enrolled_courses
+        context['posts'] = posts
         return render(request, 'student_home.html', context)
+    
+
+class StudentCreatePostView(LoginRequiredMixin, View):
+    def get(self, request):
+        context = get_user_context(request.user)
+        form = StudentPostForm()
+        context['form'] = form
+        return render(request, 'student_create_post.html', context)
+
         
 class StudentCourseView(LoginRequiredMixin, View):
     def get(self, request):
@@ -71,16 +87,21 @@ class StudentCourseView(LoginRequiredMixin, View):
             Q(allowed_specializations__isnull=True) | Q(allowed_specializations=user_specializations)
         ).distinct().order_by('created_at')
 
+        approved_enrollment = Enrollment.objects.filter(
+            course=OuterRef('pk'),
+            student=request.user,
+            is_approved=True
+        )
 
         latest_post = Post.objects.filter(course=OuterRef('pk')).order_by('-created_at')
 
         enrolled_courses = Course.objects.filter(
-            enrollments__student=request.user,
-            enrollments__is_approved=True
+            enrollments__student=request.user
         ).annotate(
+            is_approved=Exists(approved_enrollment),
             latest_post_title=Subquery(latest_post.values('title')[:1]),
             latest_post_created=Subquery(latest_post.values('created_at')[:1])
-        ).distinct()
+        ).distinct().order_by('-is_approved')
 
 
         for i, course in enumerate(available_courses):
@@ -218,7 +239,9 @@ class CourseDetailView(LoginRequiredMixin, View):
         return render(request, 'course_detail.html', context)
     
 
-class CourseDetailStudentView(LoginRequiredMixin, View):
+class CourseDetailStudentView(LoginRequiredMixin, PermissionRequiredMixin, View):
+    permission_required = 'posts.change_course'
+
     def get(self, request, course_code):
         user = request.user
         context = get_user_context(request.user)
@@ -233,6 +256,8 @@ class CourseDetailStudentView(LoginRequiredMixin, View):
             context['enrollments'] = enrollments
 
             return render(request, 'course_detail_student.html', context)
+        
+        return redirect('manage_course_view')
 
 
 
