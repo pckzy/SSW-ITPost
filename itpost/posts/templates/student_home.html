@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% load custom_filter %}
+
+{% block title %}หน้าหลัก - ITPost{% endblock %}
+
+{% block navbar %}
+{% include 'navbar.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    
+    <div class="bg-blue-600 rounded-2xl shadow-2xl p-8 mb-8 text-white">
+        <div class="flex flex-col lg:flex-row items-center justify-between gap-6">
+            <div class="flex-1">
+                <h2 class="text-3xl font-bold mb-2">สวัสดี, {{user.first_name}}! 👋</h2>
+                <p class="text-blue-100 mb-4">ยินดีต้อนรับเข้าสู่เว็บรวมประกาศ คณะเทคโนโลยีสารสนเทศ
+                </p>
+                <div class="flex flex-wrap gap-3">
+                    <div class="bg-[rgba(255,255,255,0.2)] px-4 py-2 rounded-lg">
+                        <div class="text-sm text-blue-100">วิชาที่ลงทะเบียน</div>
+                        <div class="text-2xl font-bold">3 วิชา</div>
+                    </div>
+                    <div class="bg-[rgba(255,255,255,0.2)] px-4 py-2 rounded-lg">
+                        <div class="text-sm text-blue-100">ประกาศทั้งหมด</div>
+                        <div class="text-2xl font-bold">5 รายการ</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="bg-white rounded-xl shadow-lg mb-6 p-2">
+        <div class="flex flex-wrap gap-2">
+            <a href="{% url 'student_view' %}" class="flex-1 sm:flex-none px-6 py-3 rounded-lg bg-blue-600 text-white font-medium transition-all">
+                <div class="flex items-center justify-center space-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                    </svg>
+                    <span>ประกาศทั่วไป</span>
+                </div>
+            </a>
+            <a href="{% url 'student_course_view' %}" class="flex-1 sm:flex-none px-6 py-3 rounded-lg bg-gray-100 text-gray-700 font-medium transition-all hover:bg-gray-200">
+                <div class="flex items-center justify-center space-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                    </svg>
+                    <span>คอร์สเรียน</span>
+                </div>
+            </a>
+        </div>
+    </div>
+
+
+</div>
+{% endblock %}
+
+{% block script%}
+{% endblock %}

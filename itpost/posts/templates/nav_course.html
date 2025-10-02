@@ -14,10 +14,12 @@
                     <p class="text-sm text-gray-500">{{ course.description }}</p>
                 </div>
             </div>
+            {% if user == course.created_by %}
             <a href="{% url 'prof_create_post_view' %}" class="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:from-blue-700 transition-all flex items-center">
                 <i class="fa-solid fa-plus"></i>
                 <span class="pl-2 hidden sm:inline">สร้างประกาศใหม่</span>
             </a>
+            {% endif %}
         </div>
     </div>
 </nav>

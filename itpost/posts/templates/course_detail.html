@@ -51,6 +51,19 @@
         </div>
     </div>
 
+    {% if user == course.created_by %}
+    <div class="bg-white rounded-xl shadow-lg mb-6 p-2">
+        <div class="flex flex-wrap gap-2">
+            <a href="{% url 'course_detail' course.course_code %}" class="flex-1 sm:flex-none px-6 py-3 rounded-lg bg-blue-600 text-white font-medium transition-all text-center">
+                ประกาศทั้งหมด
+            </a>
+            <a href="{% url 'course_detail_student' course.course_code %}" class="flex-1 sm:flex-none px-6 py-3 rounded-lg bg-gray-100 text-gray-700 font-medium transition-all hover:bg-gray-200 text-center">
+                รายชื่อนักศึกษา
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
 
     <div id="announcementsContent" class="space-y-6">
         <div class="bg-white rounded-xl shadow-lg p-4">
@@ -86,7 +99,7 @@
                     <span class="text-sm text-gray-500">{{ post.created_at }}</span>
                 </div>
                 <h3 class="text-xl font-semibold text-gray-800 mb-2">{{ post.title }}</h3>
-                <p class="text-gray-600 mb-4">{{ post.content|linebreaks }}</p>
+                <p class="text-gray-600 mb-4">{{ post.content|urlize|linebreaks }}</p>
 
                 <div class="flex flex-wrap gap-3 mt-4">
                     {% if post.files.all %}

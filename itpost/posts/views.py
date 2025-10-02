@@ -4,6 +4,7 @@ from django.views import View
 from django.contrib.auth import login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.auth.models import User, Group
+from django.db.models import Q
 
 from .models import *
 from .forms import *
@@ -26,9 +27,51 @@ class MainView(LoginRequiredMixin, View):
         if user.groups.filter(name="Professor").exists():
             return redirect('manage_course_view')
         elif user.groups.filter(name="Student").exists():
-            return render(request, 'student_page.html', context)
+            return redirect('student_view')
         else:
             return render(request, 'base.html', context)
+        
+
+class StudentView(LoginRequiredMixin, View):
+    def get(self, request):
+        context = get_user_context(request.user)
+        user = request.user
+        return render(request, 'student_home.html', context)
+        
+class StudentCourseView(LoginRequiredMixin, View):
+    def get(self, request):
+        context = get_user_context(request.user)
+        user = request.user
+        user_year = user.academic_info.year
+        user_majors = user.academic_info.major
+        user_specializations = user.academic_info.specialization
+
+        colors1 = ['purple', 'pink', 'rose']
+        colors2 = ['blue', 'emerald', 'orange']
+
+
+        enrolled_ids = Enrollment.objects.filter(student=user).values_list('course_id', flat=True)
+
+        available_courses = Course.objects.exclude(id__in=enrolled_ids).filter(
+            Q(allowed_years__isnull=True) | Q(allowed_years=user_year),
+            Q(allowed_majors__isnull=True) | Q(allowed_majors=user_majors),
+            Q(allowed_specializations__isnull=True) | Q(allowed_specializations=user_specializations)
+        ).distinct().order_by('created_at')
+
+        enrolled_courses = Course.objects.filter(
+            enrollments__student=request.user,
+            enrollments__is_approved=True
+        ).distinct()
+
+
+        for i, course in enumerate(available_courses):
+            course.color = colors1[i % len(colors1)]
+        for i, course in enumerate(enrolled_courses):
+            course.color = colors2[i % len(colors2)]
+
+        context['available_courses'] = available_courses
+        context['enrolled_courses'] = enrolled_courses
+        return render(request, 'student_course.html', context)
         
 
 class ManageCourseView(LoginRequiredMixin, PermissionRequiredMixin, View):
@@ -97,7 +140,9 @@ class EditCourseView(LoginRequiredMixin, PermissionRequiredMixin, View):
         return redirect('/')
     
 
-class ProfCreatePostView(LoginRequiredMixin, View):
+class ProfCreatePostView(LoginRequiredMixin, PermissionRequiredMixin, View):
+    permission_required = 'posts.add_course'
+
     def get(self, request):
         context = get_user_context(request.user)
         form = ProfessorPostForm(user=request.user)
@@ -152,6 +197,21 @@ class CourseDetailView(LoginRequiredMixin, View):
 
 
         return render(request, 'course_detail.html', context)
+    
+
+class CourseDetailStudentView(LoginRequiredMixin, View):
+    def get(self, request, course_code):
+        user = request.user
+        context = get_user_context(request.user)
+
+        course = Course.objects.get(course_code=course_code)
+
+        if user == course.created_by:
+            students = User.objects.filter(enrollments__course=course).distinct()
+            context['students'] = students
+            context['course'] = course
+            return render(request, 'course_detail_student.html', context)
+
 
 
 class LoginView(View):
