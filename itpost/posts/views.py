@@ -4,10 +4,16 @@ from django.views import View
 from django.contrib.auth import login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.auth.models import User, Group
-from django.db.models import Q
+from django.db.models import Q, OuterRef, Subquery
+
 
 from .models import *
 from .forms import *
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+
 
 def get_user_context(user):
     group = user.groups.first()
@@ -36,11 +42,18 @@ class StudentView(LoginRequiredMixin, View):
     def get(self, request):
         context = get_user_context(request.user)
         user = request.user
+
+        enrolled_courses = Course.objects.filter(
+            enrollments__student=request.user,
+            enrollments__is_approved=True
+        ).distinct()
+        context['enrolled_courses'] = enrolled_courses
         return render(request, 'student_home.html', context)
         
 class StudentCourseView(LoginRequiredMixin, View):
     def get(self, request):
         context = get_user_context(request.user)
+        request.session['return_to'] = request.path
         user = request.user
         user_year = user.academic_info.year
         user_majors = user.academic_info.major
@@ -58,9 +71,15 @@ class StudentCourseView(LoginRequiredMixin, View):
             Q(allowed_specializations__isnull=True) | Q(allowed_specializations=user_specializations)
         ).distinct().order_by('created_at')
 
+
+        latest_post = Post.objects.filter(course=OuterRef('pk')).order_by('-created_at')
+
         enrolled_courses = Course.objects.filter(
             enrollments__student=request.user,
             enrollments__is_approved=True
+        ).annotate(
+            latest_post_title=Subquery(latest_post.values('title')[:1]),
+            latest_post_created=Subquery(latest_post.values('created_at')[:1])
         ).distinct()
 
 
@@ -207,9 +226,12 @@ class CourseDetailStudentView(LoginRequiredMixin, View):
         course = Course.objects.get(course_code=course_code)
 
         if user == course.created_by:
-            students = User.objects.filter(enrollments__course=course).distinct()
-            context['students'] = students
+            enrollments = Enrollment.objects.filter(course=course)
+            # students = User.objects.filter(enrollments__course=course).distinct()
+            # context['students'] = students
             context['course'] = course
+            context['enrollments'] = enrollments
+
             return render(request, 'course_detail_student.html', context)
 
 
@@ -270,3 +292,35 @@ class RegisterView(View):
             'academic_form': academic_form
         }
         return render(request, 'register_page.html', context)
+
+
+
+class EnrollCourseAPIView(APIView):
+    def post(self, request, course_id):
+        user = request.user
+
+        try:
+            course = Course.objects.get(pk=course_id)
+        except Course.DoesNotExist:
+            return Response({'error': 'Course not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        existing = Enrollment.objects.filter(student=user, course=course).first()
+        if existing:
+            return Response({'success': False, 'message': 'Already Enrolled'}, status=status.HTTP_200_OK)
+
+        enroll = Enrollment.objects.create(student=user, course=course)
+
+        return Response({'success': True, 'message': 'Enrollment request sent', 'enrollment_id': enroll.id}, status=status.HTTP_201_CREATED)
+    
+    def put(self, request, course_id):
+
+        try:
+            enrollments = Enrollment.objects.get(pk=course_id)
+        except Enrollment.DoesNotExist:
+            return Response({'error': 'Enrollment not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        enrollments.is_approved = True
+        enrollments.save()
+
+        return Response({'success': True, 'message': 'Enrollment approve sent'}, status=status.HTTP_200_OK)
+

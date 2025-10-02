@@ -36,7 +36,7 @@
                         class="bg-[rgba(255,255,255,0.2)] w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-2">
                         <i class="fa-solid fa-person text-3xl"></i>
                     </div>
-                    <div class="text-3xl font-bold">{{ course.student_count }}</div>
+                    <div class="text-3xl font-bold" id="std-count">{{ course.student_count }}</div>
                     <div class="text-sm text-blue-200">นักศึกษา</div>
                 </div>
                 <div class="text-center">
@@ -64,26 +64,23 @@
     </div>
     {% endif %}
 
-    <div class="bg-white rounded-xl shadow-lg p-4">
-        <table class="w-full">
-                <thead class="bg-gray-100 border-b">
-                    <tr>
-                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">รูปโปรไฟล์</th>
-                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">ชื่อผู้ใช้</th>
-                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">ชื่อ</th>
-                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">อีเมล</th>
-                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">บทบาท</th>
-                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">การกระทำ</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200">
-                    {% for std in students %}
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 text-sm text-gray-900"><img src="/media/{{ users.image }}" class="border rounded-full object-cover h-[50px] w-[50px]" alt=""></td>
-                            <td class="px-6 py-4 text-sm text-gray-900"><a href="">{{ std.username }}</a></td>
-                            <td class="px-6 py-4 text-sm font-semibold text-gray-900"><a href="">{{ std.first_name }} {{ std.last_name }}</a> </td>
-                            <td class="px-6 py-4 text-sm text-gray-600">{{ std.email }}</td>
-                            <td class="px-6 py-4">
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+        {% csrf_token %}
+        <div class="block md:hidden">
+            <div class="divide-y divide-gray-200">
+                {% for enroll in enrollments %}
+                    {% with std=enroll.student %}
+                    <div class="p-4 hover:bg-gray-50">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex-1">
+                                <div class="font-semibold text-gray-900 mb-1">
+                                    <a href="" class="hover:text-indigo-600">{{ std.first_name }} {{ std.last_name }}</a>
+                                </div>
+                                <div class="text-sm text-gray-600 mb-2">
+                                    <a href="" class="hover:text-indigo-600">{{ std.email }}</a>
+                                </div>
+                            </div>
+                            <div class="flex flex-col items-end space-y-2">
                                 {% if std.groups.first.name == 'Professor' %}
                                     <span class="px-3 py-1 text-xs rounded-full bg-purple-100 text-purple-800">{{ std.groups.first.name }}</span>
                                 {% elif std.groups.first.name == 'Student' %}
@@ -91,17 +88,82 @@
                                 {% else %}
                                     <span class="px-3 py-1 text-xs rounded-full bg-red-100 text-red-800">{{ std.groups.first.name }}</span>
                                 {% endif %}
+                                
+                                {% if enroll.is_approved %}
+                                    <span class="px-3 py-1 text-xs rounded-full bg-green-100 text-green-800">อนุมัติแล้ว</span>
+                                {% else %}
+                                    <span class="enroll-{{ enroll.id }} px-3 py-1 text-xs rounded-full bg-red-100 text-red-800">ยังไม่ได้อนุมัติ</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% if not enroll.is_approved %}
+                        <button onclick="approveEnrollment(this)" data-enroll-id="{{ enroll.id }}"
+                                class="enroll-{{ enroll.id }}-btn w-full mt-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all text-sm font-medium flex items-center justify-center">
+                            <i class="fa fa-check mr-2"></i> อนุมัติ
+                        </button>
+                        {% endif %}
+                    </div>
+                    {% endwith %}
+                {% endfor %}
+            </div>
+        </div>
+
+        
+        <div class="hidden md:block overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-100 border-b">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">รหัสนักศึกษา</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">ชื่อ</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">บทบาท</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">สถานะ</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">การกระทำ</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    {% for enroll in enrollments %}
+                        {% with std=enroll.student %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 text-sm text-gray-900">
+                                <a href="" class="hover:text-indigo-600 hover:underline">{{ std.username }}</a>
+                            </td>
+                            <td class="px-6 py-4 text-sm font-semibold text-gray-900 whitespace-nowrap">
+                                <a href="" class="hover:text-indigo-600 hover:underline">{{ std.first_name }} {{ std.last_name }}</a>
                             </td>
                             <td class="px-6 py-4">
-                                <a href="" class="text-yellow-600 hover:text-yellow-800 mr-3"><i class="fa fa-edit mr-1"></i> แก้ไข</a>
+                                {% if std.groups.first.name == 'Professor' %}
+                                    <span class="px-3 py-1 text-xs rounded-full bg-purple-100 text-purple-800 whitespace-nowrap">{{ std.groups.first.name }}</span>
+                                {% elif std.groups.first.name == 'Student' %}
+                                    <span class="px-3 py-1 text-xs rounded-full bg-blue-100 text-blue-800 whitespace-nowrap">{{ std.groups.first.name }}</span>
+                                {% else %}
+                                    <span class="px-3 py-1 text-xs rounded-full bg-red-100 text-red-800 whitespace-nowrap">{{ std.groups.first.name }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4">
+                                {% if enroll.is_approved %}
+                                    <span class="px-3 py-1 text-xs rounded-full bg-green-100 text-green-800 whitespace-nowrap">อนุมัติแล้ว</span>
+                                {% else %}
+                                    <span class="enroll-{{ enroll.id }} px-3 py-1 text-xs rounded-full bg-red-100 text-red-800 whitespace-nowrap">ยังไม่ได้อนุมัติ</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4">
+                                {% if not enroll.is_approved %}
+                                <button onclick="approveEnrollment(this)" data-enroll-id="{{ enroll.id }}"
+                                        class="enroll-{{ enroll.id }}-btn w-full mt-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all text-sm font-medium flex items-center justify-center">
+                                    <i class="fa fa-check mr-2"></i> อนุมัติ
+                                </button>
+                                {% endif %}
                             </td>
                         </tr>
+                        {% endwith %}
                     {% endfor %}
                 </tbody>
             </table>
+        </div>
     </div>
 </div>
 {% endblock %}
 
 {% block script%}
+<script src="{% static '/js/approveEnroll.js' %}"></script>
 {% endblock %}

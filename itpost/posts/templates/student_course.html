@@ -71,47 +71,23 @@
                     <div class="p-6">
                         <div class="flex justify-between items-start mb-3">
                             <span class="bg-{{ac.color}}-100 text-{{ac.color}}-700 text-xs font-bold px-3 py-1 rounded-full">{{ ac.course_code }}</span>
+                            <span class="bg-green-100 text-green-700 text-xs font-semibold px-2 py-1 rounded-full flex items-center">
+                                <i class="fa-solid fa-circle-check pr-1"></i>ลงแล้ว
+                            </span>
                         </div>
                         <h3 class="text-lg font-semibold text-gray-800 mb-2">{{ ac.course_name }}</h3>
                         <p class="text-gray-600 text-sm mb-4">{{ ac.description }}</p>
                         <p class="text-gray-600 text-sm mb-4"><i class="fa-regular fa-user"></i> {{ ac.created_by.first_name }} {{ ac.created_by.last_name }}</p>
                         
-                        <div class="space-y-2 mb-4 text-sm text-gray-600">
-                            <div class="flex items-center justify-between">
-                                <span>ชั้นปีที่รับ:</span>
-                                <div class="flex space-x-2">
-                                    {% for years in ac.allowed_years.all %}
-                                    <span class="bg-{{ac.color}}-100 text-{{ac.color}}-700 text-xs font-semibold px-3 py-1 rounded-full">{{ years }}</span>
-                                    {% empty %}
-                                    <span class="bg-{{ac.color}}-100 text-{{ac.color}}-700 text-xs font-semibold px-3 py-1 rounded-full">รับทุกชั้นปี</span>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span>สาขาที่รับ:</span>
-                                <div class="flex space-x-2 flex-wrap">
-                                    {% for majors in ac.allowed_majors.all %}
-                                    <span class="bg-{{ac.color}}-100 text-{{ac.color}}-700 text-xs font-semibold px-3 py-1 rounded-full">{{ majors }}</span>
-                                    {% empty %}
-                                    <span class="bg-{{ac.color}}-100 text-{{ac.color}}-700 text-xs font-semibold px-3 py-1 rounded-full">รับทุกสาขา</span>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span>แขนงที่รับ:</span>
-                                <div class="flex space-x-2 flex-wrap">
-                                    {% for specializations in ac.allowed_specializations.all %}
-                                    <span class="bg-{{ac.color}}-100 text-{{ac.color}}-700 text-xs font-semibold px-3 py-1 rounded-full">{{ specializations }}</span>
-                                    {% empty %}
-                                    <span class="bg-{{ac.color}}-100 text-{{ac.color}}-700 text-xs font-semibold px-3 py-1 rounded-full">รับทุกแขนง</span>
-                                    {% endfor %}
-                                </div>
-                            </div>
+                        <div class="bg-{{ac.color}}-50 rounded-lg p-3 mb-4">
+                            <div class="text-xs text-{{ac.color}}-700 mb-1">ประกาศล่าสุด</div>
+                            <div class="text-sm font-medium text-{{ac.color}}-900">{% if ac.latest_post_title %}{{ ac.latest_post_title }}{% else %}ยังไม่มีโพสต์{% endif %}</div>
+                            <div class="text-xs text-{{ac.color}}-600">{% if ac.latest_post_created %}{{ ac.latest_post_created|timesince }} ago{% endif %}</div>
                         </div>
-                        <a href="" class="w-full bg-{{ac.color}}-600 text-white px-4 py-2.5 rounded-lg hover:bg-{{ac.color}}-700 transition-all font-medium flex items-center justify-center space-x-2">
-                            <i class="fa-solid fa-plus"></i>
-                            <span>ลงทะเบียน</span>
+                        <a href="{% url 'course_detail' ac.course_code %}" class="w-full bg-{{ac.color}}-600 text-white px-4 py-2.5 rounded-lg hover:bg-{{ac.color}}-700 transition-all font-medium flex items-center justify-center space-x-2">
+                            <span>เข้าดูรายละเอียด</span>
                         </a>
+                        <div class="bg-orange-50 hover:bg-orange-700"></div>
                     </div>
                 </div>
                 {% endfor %}
@@ -138,7 +114,7 @@
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {% for ac in available_courses %}
-                <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all overflow-hidden border-t-4 border-{{ac.color}}-500">
+                <div id="course-{{ ac.id }}" class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all overflow-hidden border-t-4 border-{{ac.color}}-500">
                     <div class="p-6">
                         <div class="flex justify-between items-start mb-3">
                             <span class="bg-{{ac.color}}-100 text-{{ac.color}}-700 text-xs font-bold px-3 py-1 rounded-full">{{ ac.course_code }}</span>
@@ -179,10 +155,10 @@
                                 </div>
                             </div>
                         </div>
-                        <a href="" class="w-full bg-{{ac.color}}-600 text-white px-4 py-2.5 rounded-lg hover:bg-{{ac.color}}-700 transition-all font-medium flex items-center justify-center space-x-2">
+                        <button onclick="openModal(this)" data-course-id="{{ ac.id }}" class="w-full bg-{{ac.color}}-600 text-white px-4 py-2.5 rounded-lg hover:bg-{{ac.color}}-700 transition-all font-medium flex items-center justify-center space-x-2">
                             <i class="fa-solid fa-plus"></i>
                             <span>ลงทะเบียน</span>
-                        </a>
+                        </button>
                     </div>
                 </div>
                 {% endfor %}
@@ -199,7 +175,41 @@
 
 
 </div>
+
+
+<div id="enrollModal" class="fixed inset-0 z-60 hidden">
+        
+        <div class="modal-overlay absolute inset-0 bg-black opacity-60"></div>
+        {% csrf_token %}
+        
+        <div class="relative z-10 flex items-center justify-center min-h-screen p-4">
+            <div class="modal-content bg-white rounded-2xl shadow-2xl w-full max-w-md">
+                <div class="p-6 text-center">
+                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-book-open text-blue-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-3">ยืนยันการลงทะเบียน</h3>
+                    <p class="text-gray-600 text-sm mb-6 leading-relaxed">
+                        คุณต้องการลงทะเบียนในคอร์สนี้
+                        ใช่หรือไม่
+                    </p>
+                    
+                    <div class="flex gap-3">
+                        <button onclick="cancelEnrollCourse()" 
+                                class="flex-1 px-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors cursor-pointer">
+                            ยกเลิก
+                        </button>
+                        <button onclick="enrollCourse()" 
+                                class="flex-1 px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-colors cursor-pointer">
+                            ยืนยันการลงทะเบียน
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block script%}
+<script src="{% static '/js/requestEnroll.js' %}"></script>
 {% endblock %}
