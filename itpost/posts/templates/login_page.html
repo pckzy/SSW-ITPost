@@ -43,7 +43,7 @@
         <div class="text-red-600 text-sm mt-1">{{ form.password.errors.0 }}</div>
         {% endif %}
     </div>
-
+    <input type="hidden" name="next" value="{{ request.GET.next }}">
     <div>
         <button type="submit"
             class="w-full flex justify-center mt-10 py-4 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200">

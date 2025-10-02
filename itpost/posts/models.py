@@ -116,3 +116,12 @@ class Post(models.Model):
             raise ValidationError("โพสต์ในคอร์สต้องใช้ประเภทที่ for_course=True")
         if not self.course and self.post_type.for_course:
             raise ValidationError("โพสต์ทั่วไปต้องใช้ประเภทที่ for_course=False")
+
+
+class PostFile(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='files')
+    file = models.FileField(upload_to='uploads/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.file.name

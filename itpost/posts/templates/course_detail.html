@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% load custom_filter %}
+
+{% block title %}{{ course.course_code }} - {{ course.course_name }}{% endblock %}
+
+{% block navbar %}
+{% include 'nav_course.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    
+    <div class="bg-blue-600 rounded-2xl shadow-2xl p-8 mb-8 text-white">
+        <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+            <div class="flex-1">
+                <div class="flex items-center space-x-3 mb-4">
+                    <span class="bg-[rgba(255,255,255,0.2)] px-4 py-2 rounded-lg text-sm font-bold">
+                        {{ course.course_code }}
+                    </span>
+                </div>
+                <h2 class="text-3xl font-bold mb-2">{{ course.course_name }}</h2>
+                <p class="text-blue-100 mb-4">{{ course.description }}</p>
+                <div class="flex items-center space-x-2 text-sm">
+                    <i class="fa-regular fa-user"></i>
+                    <span>{{ course.created_by.first_name }} {{ course.created_by.last_name }}</span>
+                </div>
+            </div>
+
+
+            <div class="grid grid-cols-2 gap-6">
+                <div class="text-center">
+                    <div
+                        class="bg-[rgba(255,255,255,0.2)] w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-2">
+                        <i class="fa-solid fa-person text-3xl"></i>
+                    </div>
+                    <div class="text-3xl font-bold">{{ course.student_count }}</div>
+                    <div class="text-sm text-blue-200">นักศึกษา</div>
+                </div>
+                <div class="text-center">
+                    <div
+                        class="bg-[rgba(255,255,255,0.2)] w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-2">
+                        <i class="fa-regular fa-bell text-3xl"></i>
+                    </div>
+                    <div class="text-3xl font-bold">{{ course.post_count }}</div>
+                    <div class="text-sm text-blue-200">ประกาศ</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="announcementsContent" class="space-y-6">
+        <div class="bg-white rounded-xl shadow-lg p-4">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="flex items-center space-x-3">
+                    <i class="fa-solid fa-filter text-gray-500 text-2xl"></i>
+                    <span class="text-gray-700 font-medium">กรองตามประเภท:</span>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <a href="?filter=" class="{% if not request.GET.filter or request.GET.filter == '' %}bg-blue-100 text-blue-700 hover:bg-blue-200{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %} px-4 py-2 rounded-lg text-sm font-medium transition-all">ทั้งหมด</a>
+                    <a href="?filter=4" class="{% if request.GET.filter == '4' %}bg-blue-100 text-blue-700 hover:bg-blue-200{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %} px-4 py-2 rounded-lg text-sm font-medium transition-all">ด่วน</a>
+                    <a href="?filter=5" class="{% if request.GET.filter == '5' %}bg-blue-100 text-blue-700 hover:bg-blue-200{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %} px-4 py-2 rounded-lg text-sm font-medium transition-all">สอบ</a>
+                    <a href="?filter=6" class="{% if request.GET.filter == '6' %}bg-blue-100 text-blue-700 hover:bg-blue-200{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %} px-4 py-2 rounded-lg text-sm font-medium transition-all">งาน</a>
+                    <a href="?filter=7" class="{% if request.GET.filter == '7' %}bg-blue-100 text-blue-700 hover:bg-blue-200{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %} px-4 py-2 rounded-lg text-sm font-medium transition-all">ทั่วไป</a>
+                </div>
+            </div>
+        </div>
+
+            
+        <div class="grid gap-6">
+            {% for post in posts %}
+            <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all border-l-4 {% if post.post_type.name == 'งาน'%}border-yellow-500{% elif post.post_type.name == 'สอบ'%}border-green-500{% elif post.post_type.name == 'ด่วน'%}border-red-500{% else %}border-blue-500{% endif %}">
+                <div class="flex flex-wrap items-start justify-between gap-3 mb-3">
+                    {% if post.post_type.name == 'งาน'%}
+                    <span class="bg-yellow-100 text-yellow-700 text-xs font-bold px-3 py-1 rounded-full">{{ post.post_type.name }}</span>
+                    {% elif post.post_type.name == 'สอบ'%}
+                    <span class="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full">{{ post.post_type.name }}</span>
+                    {% elif post.post_type.name == 'ด่วน'%}
+                    <span class="bg-red-100 text-red-700 text-xs font-bold px-3 py-1 rounded-full">{{ post.post_type.name }}</span>
+                    {% elif post.post_type.name == 'ทั่วไป'%}
+                    <span class="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full">{{ post.post_type.name }}</span>
+                    {% endif %}
+                    <span class="text-sm text-gray-500">{{ post.created_at }}</span>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-800 mb-2">{{ post.title }}</h3>
+                <p class="text-gray-600 mb-4">{{ post.content|linebreaks }}</p>
+
+                <div class="flex flex-wrap gap-3 mt-4">
+                    {% if post.files.all %}
+                        {% for file in post.files.all %}
+                            {% if file.file.name|lower|ends_with:".jpg" or file.file.name|lower|ends_with:".jpeg" or file.file.name|lower|ends_with:".png" or file.file.name|lower|ends_with:".gif" %}
+                                <a href="{{ file.file.url }}" target="_blank" class="block">
+                                    <img src="{{ file.file.url }}" alt="Preview of {{ file.file.name }}" class="max-w-xs h-auto object-cover rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
+                                </a>
+                            {% elif file.file.name|lower|ends_with:".pdf" %}
+                                <a href="{{ file.file.url }}" target="_blank" class="flex items-center p-3 rounded-lg bg-gray-50 hover:bg-gray-100 border border-gray-200 transition-colors duration-200">
+                                    <i class="far fa-file-pdf text-2xl text-red-600"></i>
+                                    <span class="ml-2 text-sm font-medium text-gray-700">{{ file.file.name|remove_prefix:"uploads/" }}</span>
+                                </a>
+                            {% elif file.file.name|lower|ends_with:".docx" %}
+                                <a href="{{ file.file.url }}" target="_blank" class="flex items-center p-3 rounded-lg bg-gray-50 hover:bg-gray-100 border border-gray-200 transition-colors duration-200">
+                                    <i class="far fa-file-word text-2xl text-blue-600"></i>
+                                    <span class="ml-2 text-sm font-medium text-gray-700">{{ file.file.name|remove_prefix:"uploads/" }}</span>
+                                </a>
+                            {% else %}
+                                <a href="{{ file.file.url }}" target="_blank" class="flex items-center p-3 rounded-lg bg-gray-50 hover:bg-gray-100 border border-gray-200 transition-colors duration-200">
+                                    <i class="far fa-file text-2xl text-gray-600"></i>
+                                    <span class="ml-2 text-sm font-medium text-gray-700">{{ file.file.name|remove_prefix:"uploads/" }}</span>
+                                </a>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <hr class="mt-4 border-gray-200">
+
+                <div class="flex justify-between mt-4">
+                    <div class="flex gap-6">
+                            <button data-post-id="{{ post.id }}" class="like-btn flex items-center gap-2 text-gray-600 hover:text-red-500 transition-colors cursor-pointer duration-200 transform hover:scale-110">
+                                {% if user in post.liked_by.all %}
+                                <i class="fas fa-heart text-red-500 text-xl"></i>
+                                {% else %}
+                                <i class="far fa-heart text-xl"></i>
+                                {% endif %}
+                                <span class="like-count">{{ post.liked_by.count }}</span>
+                            </button>
+                        <button class="flex items-center gap-2 text-gray-600 hover:text-blue-500 transition-colors cursor-pointer duration-200 transform hover:scale-110">
+                            <i data-post-id="{{ post.id }}" class="comment-btn far fa-comment text-xl"></i>
+                            <span id="comment-{{ post.id }}-count">{{ post.comments.count }}</span>
+                        </button>
+                    </div>
+                    <div class="flex gap-6">
+                        {% if user == post.created_by %}
+                        <button class="flex items-center gap-2 text-blue-500 hover:text-blue-700 transition-colors cursor-pointer duration-200 transform hover:scale-110">
+                            <i class="fas fa-pen-to-square text-xl"></i>
+                        </button>
+                        {% endif %}
+                        {% if user == post.created_by or user.is_staff %}
+                        <button class="flex items-center gap-2 text-red-500 hover:text-red-600 transition-colors cursor-pointer duration-200 transform hover:scale-110">
+                            <i data-post-id="{{ post.id }}" class="confirmDelete-btn fas fa-trash-can text-xl"></i>
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-8">
+                <p class="text-gray-500 text-lg">ยังไม่มีโพสต์</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script%}
+{% endblock %}

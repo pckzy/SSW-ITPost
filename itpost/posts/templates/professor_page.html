@@ -6,25 +6,27 @@
 
 {% block title %}จัดการคอร์สและประกาศ - ITPost{% endblock %}
 
+{% block navbar %}
+    {% include 'navbar.html' %}
+{% endblock %}
+
 {% block content %}
 <div class="container mx-auto px-4 py-8">
 
     <div class="bg-white rounded-xl shadow-lg mb-6 p-2">
         <div class="flex flex-wrap gap-2">
-            <button onclick="showTab('courses')" id="coursesTab"
-                class="tab-btn flex-1 sm:flex-none px-6 py-3 rounded-lg bg-blue-600 text-white font-medium transition-all">
+            <a href="{% url 'manage_course_view' %}" class="flex-1 sm:flex-none px-6 py-3 rounded-lg bg-blue-600 text-white font-medium transition-all">
                 <div class="flex items-center justify-center space-x-2">
                     <i class="fa-solid fa-book-open"></i>
                     <span>จัดการคอร์ส</span>
                 </div>
-            </button>
-            <button onclick="showTab('announcements')" id="announcementsTab"
-                class="tab-btn flex-1 sm:flex-none px-6 py-3 rounded-lg bg-gray-100 text-gray-700 font-medium transition-all hover:bg-gray-200">
+            </a>
+            <a href="{% url 'prof_create_post_view' %}" class="flex-1 sm:flex-none px-6 py-3 rounded-lg bg-gray-100 text-gray-700 font-medium transition-all hover:bg-gray-200">
                 <div class="flex items-center justify-center space-x-2">
                     <i class="fa-solid fa-bullhorn"></i>
                     <span>สร้างประกาศ</span>
                 </div>
-            </button>
+            </a>
         </div>
     </div>
 
@@ -121,9 +123,9 @@
                     </div>
 
                     <div class="flex space-x-2">
-                        <button class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all text-sm font-medium">
+                        <a href="{% url 'course_detail' c.course_code %}" class="flex flex-1 justify-center items-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all text-sm font-medium">
                             ดูรายละเอียด
-                        </button>
+                        </a>
                         <a href="{% url 'course_edit_view' c.id %}" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all">
                             <i class="fa-regular fa-pen-to-square text-gray-600"></i>
                         </a>
@@ -134,7 +136,6 @@
                 </div>
             </div>
             {% endfor %}
-
 
         </div>
     </div>

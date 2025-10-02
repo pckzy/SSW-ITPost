@@ -95,6 +95,63 @@ class EditCourseView(LoginRequiredMixin, PermissionRequiredMixin, View):
             return render(request, 'edit_course.html', context)
         
         return redirect('/')
+    
+
+class ProfCreatePostView(LoginRequiredMixin, View):
+    def get(self, request):
+        context = get_user_context(request.user)
+        form = ProfessorPostForm(user=request.user)
+
+        context['form'] = form
+        return render(request, 'prof_create_post.html', context)
+    
+    def post(self, request):
+        form = ProfessorPostForm(request.POST, request.FILES, user=request.user)
+        
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.created_by = request.user
+
+            post.status = 'approved'
+            post.save()
+            form.save_m2m()
+
+            course = form.cleaned_data['course']
+            course_code = course.course_code
+
+            for f in request.FILES.getlist('files'):
+                PostFile.objects.create(post=post, file=f)
+
+            return redirect('course_detail', course_code=course_code)
+        
+        context = get_user_context(request.user)
+        context['form'] = form
+        return render(request, 'prof_create_post.html', context)
+    
+
+class CourseDetailView(LoginRequiredMixin, View):
+    def get(self, request, course_code):
+        user = request.user
+        context = get_user_context(request.user)
+
+        course = Course.objects.get(course_code=course_code)
+
+        if user.groups.filter(name="Student").exists():
+            if not course.enrollments.filter(student=user, is_approved=True).exists():
+                return redirect('/')
+
+
+        posts = course.posts.filter(status='approved')
+
+        filter = request.GET.get('filter')
+        if filter:
+            posts = posts.filter(post_type__id=filter)
+
+        context['course'] = course
+        context['posts'] = posts
+
+
+        return render(request, 'course_detail.html', context)
 
 
 class LoginView(View):
@@ -105,7 +162,7 @@ class LoginView(View):
     def post(self, request):
         form = CustomAuthenticationForm(request, data=request.POST)
         if form.is_valid():
-            next_url = request.GET.get('next') or '/'
+            next_url = request.POST.get('next') or request.GET.get('next') or '/'
             login(request, form.get_user())
             return redirect(next_url)
 
