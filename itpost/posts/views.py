@@ -458,9 +458,27 @@ class AdminView(LoginRequiredMixin, PermissionRequiredMixin, View):
     
     def get(self, request):
         context = get_user_context(request.user)
+
+        search_query = request.GET.get("search", "").strip()
+        group_query = request.GET.get("group", "")
+
+        
         request.session['return_to'] = request.path
         users = User.objects.all().order_by('username')
+        context['user_count'] = users.count()
+
+        if group_query:
+            users = users.filter(groups__id=group_query)
+
+        if search_query:
+            users = users.filter(
+                Q(username__icontains=search_query) |
+                Q(first_name__icontains=search_query) |
+                Q(last_name__icontains=search_query)
+            )
+
         all_groups = Group.objects.all()
+
         context['users'] = users
         context['all_groups'] = all_groups
         return render(request, 'admin_dashboard.html', context)
