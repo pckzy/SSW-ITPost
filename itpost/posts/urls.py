@@ -10,6 +10,7 @@ urlpatterns = [
     path("logout/", views.logout_view, name="logout_view"),
     path("register/", views.RegisterView.as_view(), name="register_view"),
     path("profile/<str:username>/", views.ProfileView.as_view(), name="profile_view"),
+    path("profile/edit/<str:username>/", views.EditProfileView.as_view(), name="edit_profile_view"),
     path("student/", views.StudentView.as_view(), name="student_view"),
     path("student/courses/", views.StudentCourseView.as_view(), name="student_course_view"),
     path("student/create_post/", views.StudentCreatePostView.as_view(), name="student_create_post"),

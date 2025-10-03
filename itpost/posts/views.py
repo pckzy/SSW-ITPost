@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.views import View
 
-from django.contrib.auth import login, logout
+from django.contrib.auth import login, logout, update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.auth.models import User, Group
 from django.db.models import Q, OuterRef, Subquery, Exists
@@ -41,6 +41,7 @@ class MainView(LoginRequiredMixin, View):
 class StudentView(LoginRequiredMixin, View):
     def get(self, request):
         context = get_user_context(request.user)
+        request.session['return_to'] = request.path
         user = request.user
 
         posts = Post.objects.all()
@@ -364,8 +365,89 @@ class ProfileView(LoginRequiredMixin, View):
             courses = Course.objects.filter(enrollments__student=users, enrollments__is_approved=True)
         elif users.groups.filter(name="Professor").exists():
             courses = Course.objects.filter(created_by=users)
+        else:
+            return redirect('/')
         
         context['courses'] = courses
         context['users'] = users
 
         return render(request, 'user_profile.html', context)
+    
+
+class EditProfileView(LoginRequiredMixin, View):
+    def get(self, request, username):
+        context = get_user_context(request.user)
+
+        try:
+            users = User.objects.get(username=username)
+        except User.DoesNotExist:
+            return redirect('/')
+        
+        if request.user.is_staff or users == request.user:
+
+            profile, _ = Profile.objects.get_or_create(user=users)
+            profile_form = ProfileUpdateForm(instance=profile)
+            
+            password_form = CustomPasswordChangeForm(user=users)
+            user_form = UserUpdateForm(instance=users)
+
+            if users.groups.filter(name="Student").exists():
+                academic_form = AcademicUpdateForm(instance=users.academic_info, user=request.user)
+                context['academic_form'] = academic_form
+            
+            context['users'] = users
+            context['password_form'] = password_form
+            context['user_form'] = user_form
+            context['profile_form'] = profile_form
+
+            return render(request, 'edit_profile.html', context)
+        else:
+            return redirect('/')
+        
+    def post(self, request, username):
+        context = get_user_context(request.user)
+
+        try:
+            users = User.objects.get(username=username)
+        except User.DoesNotExist:
+            return redirect('/')
+        
+        if request.user.is_staff or users == request.user:
+            profile = Profile.objects.get(user=users)
+            profile_form = ProfileUpdateForm(request.POST, request.FILES, instance=profile)
+            user_form = UserUpdateForm(request.POST, instance=users)
+            password_form = CustomPasswordChangeForm(user=users, data=request.POST)
+            academic_form = None
+
+            if users.groups.filter(name="Student").exists():
+                academic_form = AcademicUpdateForm(request.POST, instance=users.academic_info, user=request.user)
+                context['academic_form'] = academic_form
+
+            valid_user = user_form.is_valid()
+            valid_profile = profile_form.is_valid()
+            valid_academic = academic_form.is_valid() if academic_form else True
+
+            if request.POST.get('old_password') or request.POST.get('new_password1') or request.POST.get('new_password2'):
+                if password_form.is_valid():
+                    password_form.save()
+                    update_session_auth_hash(request, users)
+                else:
+                    valid_user = valid_profile = valid_academic = False
+
+            if valid_user and valid_profile and valid_academic:
+                
+                user_form.save()
+                profile_form.save()
+                if academic_form:
+                    academic_form.save()
+                
+                return redirect('profile_view', username=users.username)
+            
+            context['users'] = users
+            context['password_form'] = password_form
+            context['user_form'] = user_form
+            context['profile_form'] = profile_form
+            return render(request, 'edit_profile.html', context)
+
+        else:
+            return redirect('/')

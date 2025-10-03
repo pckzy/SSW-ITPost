@@ -19,7 +19,7 @@
             <div class="h-32 bg-blue-600"></div>
             <div class="px-8 pb-8">
                 <div class="flex flex-col md:flex-row items-center md:items-end -mt-16 md:-mt-12">
-                    <img src="/media/profile/no-profile.png" class="w-32 h-32 rounded-full border-4 border-white shadow-xl object-cover" alt="">
+                    <img src="/media/{{ users.profile.image }}" class="w-32 h-32 rounded-full border-4 border-white shadow-xl object-cover" alt="">
                     <div class="flex-1 md:ml-6 mt-4 md:mt-0 text-center md:text-left text-white">
                         <h2 class="text-3xl font-bold mb-1">{{ users.first_name }} {{ users.last_name }}</h2>
                         {%  if users|in_group:"Student" %}
@@ -40,10 +40,10 @@
                         {% endif %}
                     </div>
                     {% if users == user or user.is_staff %}
-                    <button class="mt-4 md:mt-0 px-6 py-2 bg-white text-blue-600 rounded-lg font-medium hover:bg-blue-50 transition-all flex items-center space-x-2">
+                    <a href="{% url 'edit_profile_view' users.username %}" class="mt-4 md:mt-0 px-6 py-2 bg-white text-blue-600 rounded-lg font-medium hover:bg-blue-50 transition-all flex items-center space-x-2">
                         <i class="fa-solid fa-pencil"></i>
                         <span>แก้ไขโปรไฟล์</span>
-                    </button>
+                    </a>
                     {% endif %}
                 </div>
             </div>

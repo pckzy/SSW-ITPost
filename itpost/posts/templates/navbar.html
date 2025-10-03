@@ -10,7 +10,7 @@
                     <div class="bg-blue-600 p-3 px-4 rounded-lg">
                         <i class="fa fa-bullhorn text-2xl text-white"></i>
                     </div>
-                    <a href="/">
+                    <a href="{% url 'main_view' %}">
                         <h1 class="text-2xl font-semibold text-gray-800">เว็บรวมประกาศคณะไอที</h1>
                         <p class="text-sm text-gray-500">IT Faculty Announcement Website</p>
                     </a>
@@ -18,7 +18,7 @@
                     <div class="bg-blue-600 p-3 px-4 rounded-lg">
                         <i class="fa-solid fa-book-open text-2xl text-white"></i>
                     </div>
-                    <a href="/">
+                    <a href="{% url 'back' %}">
                         <h1 class="text-2xl font-semibold text-gray-800">ระบบจัดการคอร์สและประกาศ</h1>
                         <p class="text-sm text-gray-500">สำหรับอาจารย์</p>
                     </a>
@@ -45,8 +45,8 @@
 
                     <div id="userDropdown" class="absolute top-full right-0 mt-2 w-48 bg-white shadow-lg rounded-lg z-50 hidden">
                         <a href="{% url 'student_create_post' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-100"><i class="fa fa-plus mr-1"></i> สร้างโพสต์</a>
-                        <a href="" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-100"><i class="fa fa-bullhorn mr-1"></i> ประกาศ</a>
-                        <a href="{% url 'profile_view' request.user.username %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-100"><i class="fa fa-user-gear mr-1"></i> ตั้งค่าโปรไฟล์</a>
+                        <a href="{% url 'student_view' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-100"><i class="fa fa-bullhorn mr-1"></i> ประกาศ</a>
+                        <a href="{% url 'profile_view' request.user.username %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-100"><i class="fa-solid fa-user mr-1"></i> หน้าโปรไฟล์</a>
                         <hr class="border-t-1 border-gray-200">
                         <a href="{% url 'logout_view' %}" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-100"><i class="fa fa-right-from-bracket mr-1"></i> ออกจากระบบ</a>
                     </div>
@@ -73,11 +73,11 @@
             <a href="{% url 'student_create_post' %}" class="block px-4 py-2 rounded hover:bg-blue-100 text-gray-700">
                 <i class="fa fa-plus mr-2 text-xl text-blue-500"></i> สร้างโพสต์
             </a>
-            <a href="" class="block px-4 py-2 rounded hover:bg-blue-100 text-gray-700">
+            <a href="{% url 'student_view' %}" class="block px-4 py-2 rounded hover:bg-blue-100 text-gray-700">
                 <i class="fa fa-comments mr-2 text-blue-500"></i> ประกาศ
             </a>
             <a href="{% url 'profile_view' request.user.username %}" class="block px-4 py-2 rounded hover:bg-blue-100 text-gray-700">
-                <i class="fa fa-user-gear mr-2 text-blue-500"></i> ตั้งค่าโปรไฟล์
+                <i class="fa fa-user mr-2 text-blue-500"></i> หน้าโปรไฟล์
             </a>
             <a href="{% url 'logout_view' %}" class="block px-4 py-2 rounded hover:bg-red-100 text-red-600">
                 <i class="fa fa-right-from-bracket mr-2"></i> ออกจากระบบ
