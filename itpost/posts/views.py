@@ -122,29 +122,16 @@ class ManageCourseView(LoginRequiredMixin, PermissionRequiredMixin, View):
     def get(self, request):
         request.session['return_to'] = request.path
         context = get_user_context(request.user)
-        course_lists = Course.objects.filter(created_by=request.user)
+        course_lists = Course.objects.filter(created_by=request.user).order_by('-created_at')
 
         course_form = CourseForm()
 
         context['course_form'] = course_form
         context['course_lists'] = course_lists
 
-        return render(request, 'professor_page.html', context)
-    
-    def post(self, request):
-        context = get_user_context(request.user)
-        course_form = CourseForm(request.POST)
-
-        if course_form.is_valid():
-            course = course_form.save(commit=False)
-            course.created_by = request.user
-            course.save()
-            course_form.save_m2m()
-            return redirect('manage_course_view')
-        
-        course_lists = Course.objects.filter(created_by=request.user)
-        context['course_form'] = course_form
-        context['course_lists'] = course_lists
+        context['year_choices'] = YearOption.objects.all()
+        context['major_choices'] = Major.objects.all()
+        context['specialization_choices'] = Specialization.objects.all()
 
         return render(request, 'professor_page.html', context)
 

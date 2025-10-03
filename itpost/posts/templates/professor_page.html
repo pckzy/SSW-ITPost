@@ -43,58 +43,65 @@
                 </button>
             </div>
 
-            <div class="transition-all duration-500 {% if course_form.errors %}0max-h-[1000px]{% else %}max-h-0{% endif %}" id="course-form">
+            <div class="transition-all duration-500 {% if course_form.errors %}max-h-[1000px]{% else %}max-h-0{% endif %}" id="course-form">
 
-                <form action="{% url 'manage_course_view' %}" method="post" class="bg-white space-y-6 p-8">
+                <form id="course-forms" class="bg-white space-y-6 p-8">
                     {% csrf_token %}
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <div class="flex justify-between">
-                                <label class="block text-md font-medium text-gray-700 mb-2">รหัสวิชา <span
-                                        class="text-red-500">*</span></label>
-                                <span class="text-red-600 text-sm">{{ course_form.course_code.errors.0 }}</span>
-                            </div>
-                            {{ course_form.course_code }}
+                            <label class="block text-md font-medium text-gray-700 mb-2">รหัสวิชา <span class="text-red-500">*</span></label>
+                            <input name="course_code" type="text" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="เช่น CS101">
+                            <span id="error-course_code" class="text-red-600 text-sm"></span>
                         </div>
                         <div>
-                            <label class="block text-md font-medium text-gray-700 mb-2">ชื่อวิชา <span
-                                    class="text-red-500">*</span></label>
-                            {{ course_form.course_name }}
+                            <label class="block text-md font-medium text-gray-700 mb-2">ชื่อวิชา <span class="text-red-500">*</span></label>
+                            <input name="course_name" type="text" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="เช่น Computer Programming">
                         </div>
                     </div>
 
                     <div>
                         <label class="block text-md font-medium text-gray-700 mb-2">คำอธิบายรายวิชา</label>
-                        {{ course_form.description }}
+                        <textarea name="description" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="รายละเอียดเกี่ยวกับรายวิชา..."></textarea>
                     </div>
 
                     <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-md font-medium text-gray-700 mb-2">ชั้นปีที่สามารถลงทะเบียน</label>
-                            {{ course_form.allowed_years }}
+                            <select name="allowed_years" multiple class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" size="5">
+                                {% for year in year_choices %}
+                                    <option value="{{ year.id }}">{{ year.year }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
                         <div>
                             <label class="block text-md font-medium text-gray-700 mb-2">สาขาที่สามารถลงทะเบียน</label>
-                            {{ course_form.allowed_majors }}
+                            <select name="allowed_majors" multiple class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" size="5">
+                                {% for major in major_choices %}
+                                    <option value="{{ major.id }}">{{ major.code }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
                         <div class="col-span-3 md:col-span-1">
                             <label class="block text-md font-medium text-gray-700 mb-2">แขนงที่สามารถลงทะเบียน</label>
-                            {{ course_form.allowed_specializations }}
+                            <select name="allowed_specializations" multiple class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" size="5">
+                                {% for spec in specialization_choices %}
+                                    <option value="{{ spec.id }}">{{ spec.name }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
                     </div>
 
                     <div class="flex flex-col sm:flex-row gap-3 pt-4">
-                        <button type="submit"
-                            class="flex-1 bg-blue-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-600 transition-all">
+                        <button type="submit" class="flex-1 bg-blue-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-600 transition-all">
                             สร้างคอร์ส
                         </button>
-                        <button type="button" onclick="toggleCourseForm()"
-                            class="flex-1 sm:flex-none bg-gray-100 text-gray-700 px-6 py-3 rounded-lg font-medium hover:bg-gray-200 transition-all">
+                        <button type="button" onclick="toggleCourseForm()" class="flex-1 sm:flex-none bg-gray-100 text-gray-700 px-6 py-3 rounded-lg font-medium hover:bg-gray-200 transition-all">
                             ยกเลิก
                         </button>
                     </div>
                 </form>
-
             </div>
         </div>
 
@@ -157,5 +164,75 @@
             formDiv.classList.remove('max-h-[1000px]')
         }
     }
+</script>
+
+<script>
+document.getElementById('course-forms').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const form = this;
+    const formData = new FormData(form);
+    const payload = Object.fromEntries(formData.entries());
+
+    payload.allowed_years = Array.from(form.allowed_years.selectedOptions).map(opt => opt.value);
+    payload.allowed_majors = Array.from(form.allowed_majors.selectedOptions).map(opt => opt.value);
+    payload.allowed_specializations = Array.from(form.allowed_specializations.selectedOptions).map(opt => opt.value);
+
+    fetch('/api/courses/create/', {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            const container = document.getElementById('coursesList');
+            const newCourse = document.createElement('div');
+            newCourse.className = 'bg-white rounded-xl shadow-lg hover:shadow-xl transition-all overflow-hidden border-t-4 border-blue-500';
+            newCourse.innerHTML = `
+                <div class="p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full">${data.course.course_code}</span>
+                        <button class="text-gray-400 hover:text-gray-600"></button>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">${data.course.title}</h3>
+                    <p class="text-gray-600 text-sm mb-4">${data.course.description}</p>
+
+                    <div class="flex items-center justify-between mb-4 text-sm text-gray-500">
+                        <div class="flex items-center space-x-1">
+                            <i class="fa-regular fa-circle-user"></i>
+                            <span>${data.course.student_count} คน</span>
+                        </div>
+                        <div class="flex items-center space-x-1">
+                            <i class="fa-solid fa-bullhorn"></i>
+                            <span>${data.course.post_count} ประกาศ</span>
+                        </div>
+                    </div>
+
+                    <div class="flex space-x-2">
+                        <a href="/course/${data.course.course_code}/" class="flex flex-1 justify-center items-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all text-sm font-medium">
+                            ดูรายละเอียด
+                        </a>
+                        <a href="manage_course/edit_course/${data.course.id}/" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all">
+                            <i class="fa-regular fa-pen-to-square text-gray-600"></i>
+                        </a>
+                        <button class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all">
+                            <i class="fa-regular fa-trash-can text-red-600"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            container.prepend(newCourse);
+            form.reset();
+        } else {
+            if (data.errors.course_code) {
+                document.getElementById('error-course_code').textContent = data.errors.course_code[0];
+            }
+        }
+    });
+});
 </script>
 {% endblock %}
