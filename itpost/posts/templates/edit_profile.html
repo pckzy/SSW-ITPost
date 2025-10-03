@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% load custom_filter %}
+
+{% block title %}แก้ไขโปรไฟล์ - ITPost{% endblock %}
+
+{% block navbar %}
+    {% include 'navbar.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <form action="{% url 'edit_profile_view' users.username %}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="max-w-4xl mx-auto">
+            <div class="bg-white rounded-xl shadow-lg p-8 mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6"><i class="fa-solid fa-image text-blue-600"></i> รูปโปรไฟล์</h2>
+                <div class="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6">
+                    <img id="preview" src="/media/{{ users.profile.image }}" class="w-32 h-32 rounded-full border-4 border-gray-200 shadow-xl object-cover" alt="">
+                    <div class="flex-1 text-center md:text-left">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">เปลี่ยนรูปโปรไฟล์</h3>
+                        <p class="text-sm text-gray-600 mb-4">รองรับไฟล์ JPG, PNG หรือ GIF ขนาดไม่เกิน 5MB</p>
+                        <div class="flex flex-wrap gap-2 justify-center md:justify-start">
+                            <label for="{{ profile_form.image.id_for_label }}" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all text-sm font-medium">
+                                อัพโหลดรูป
+                            </label>
+                            {{ profile_form.image }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="bg-white rounded-xl shadow-lg p-8 mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center space-x-3">
+                    <i class="fa-solid fa-user text-blue-600"></i>
+                    <span>ข้อมูลส่วนตัว</span>
+                </h2>
+                <div class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">ชื่อจริง <span class="text-red-500">*</span></label>
+                            {{ user_form.first_name }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">นามสกุล <span class="text-red-500">*</span></label>
+                            {{ user_form.last_name }}
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="flex justify-between">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">ชื่อผู้ใช้</label>
+                            <span class="text-red-600 text-sm">{{ user_form.username.errors }}</span>
+                        </div>
+                        {{ user_form.username }}
+                    </div>
+                    
+                    <div>
+                        <div class="flex justify-between">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">อีเมล <span class="text-red-500">*</span></label>
+                            <span class="text-red-600 text-sm">{{ user_form.email.errors }}</span>
+                        </div>
+                        {{ user_form.email }}
+                    </div>
+                </div>
+            </div>
+
+            {% if users|in_group:"Student" %}
+                <div class="bg-white rounded-xl shadow-lg p-8 mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center space-x-3">
+                        <i class="fa-solid fa-book-open text-blue-600"></i>
+                        <span>ข้อมูลการศึกษา</span>
+                    </h2>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">ชั้นปี</label>
+                            {{ academic_form.year }}
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">สาขา</label>
+                            {{ academic_form.major }}
+                        </div>
+
+                        <div id="specialization-div">
+                            <label for="" class="block text-sm font-medium text-gray-700 mb-2">แขนง</label>
+                            {{ academic_form.specialization }} 
+                        </div>
+
+                        {% if request.user|in_group:"Student" %}
+                        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+                            <div class="flex items-center space-x-2">
+                                <i class="fa-solid fa-circle-info text-blue-600"></i>
+                                <p class="text-sm text-blue-800">ข้อมูลทางการศึกษาไม่สามารถแก้ไขได้ หากต้องการเปลี่ยนแปลง กรุณาติดต่อแอดมิน</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+
+            
+            <div class="bg-white rounded-xl shadow-lg p-8 mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center space-x-3">
+                    <i class="fa-solid fa-lock text-blue-600"></i>
+                    <span>เปลี่ยนรหัสผ่าน</span>
+                </h2>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">รหัสผ่านปัจจุบัน</label>
+                        {{ password_form.old_password }}
+                        {% if password_form.old_password.errors %}
+                        <p class="text-red-500 text-sm mt-1">{{ password_form.old_password.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">รหัสผ่านใหม่</label>
+                        {{ password_form.new_password1 }}
+                        <p class="text-xs text-gray-500 mt-1">รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร</p>
+                        {% if password_form.new_password1.errors %}
+                        <p class="text-red-500 text-sm mt-1">{{ password_form.new_password1.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">ยืนยันรหัสผ่านใหม่</label>
+                        {{ password_form.new_password2 }}
+                        {% if password_form.new_password2.errors %}
+                        <p class="text-red-500 text-sm mt-1">{{ password_form.new_password2.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-4">
+                <button type="submit" class="flex-1 px-8 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-medium text-lg flex items-center justify-center space-x-2">
+                    <span>บันทึกการเปลี่ยนแปลง</span>
+                </button>
+                <a href="{% url 'back' %}" class="flex-1 sm:flex-none px-8 py-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all font-medium text-lg">
+                    ยกเลิก
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
+{% endblock %}
+
+{% block script%}
+<script>
+    let imageSrc = '{{ users.profile.image }}'
+    const image = document.getElementById('{{ profile_form.image.id_for_label }}')
+</script>
+<script src="{% static '/js/editProfile.js' %}"></script>
+{% endblock %}

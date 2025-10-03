@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm, PasswordChangeForm
 from django.contrib.auth.models import User
 from .models import *
 import re
@@ -169,3 +169,104 @@ class StudentPostForm(forms.ModelForm):
 
         self.fields['post_type'].empty_label = "-- เลือกชนิดของประกาศ --"
         self.fields['post_type'].queryset = PostType.objects.filter(for_course=False)
+
+
+class CustomPasswordChangeForm(PasswordChangeForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['old_password'].required = False
+        self.fields['new_password1'].required = False
+        self.fields['new_password2'].required = False
+        self.fields['old_password'].widget.attrs.update({
+            'autofocus': False,
+            'placeholder': '********',
+            'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+        })
+        self.fields['new_password1'].widget.attrs.update({
+            'placeholder': '********',
+            'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+        })
+        self.fields['new_password2'].widget.attrs.update({
+            'placeholder': '********',
+            'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+        })
+
+class UserUpdateForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = [
+            'username', 'first_name', 'last_name', 'email'
+        ]
+        widgets = {
+            "username": forms.TextInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+            }),
+            "first_name": forms.TextInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+            }),
+            "last_name": forms.TextInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+            }),
+            "email": forms.EmailInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+            }),
+        }
+
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+    
+        if email and not email.endswith('@kmitl.ac.th'):
+            raise forms.ValidationError("อีเมลสถาบันเท่านั้น")
+        
+        return email
+    
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        qs = User.objects.filter(username__iexact=username)
+        pattern = r'^[0-9]{2}07[0-9]{4}$'
+        
+        if self.instance.pk:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise forms.ValidationError("ชื่อผู้ใช้นี้มีอยู่แล้วในระบบ")
+
+        if not re.match(pattern, username):
+           raise forms.ValidationError('รหัสนักศึกษาเท่านั้น')
+
+        return username
+
+class AcademicUpdateForm(forms.ModelForm):
+    class Meta:
+        model = AcademicInfo
+        fields = [
+            'major', 'specialization', 'year'
+        ]
+        widgets = {
+            'year': forms.Select(attrs={'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-600'}),
+            'major': forms.Select(attrs={'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-600'}),
+            'specialization': forms.Select(attrs={'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-600'})
+        }
+    
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+
+        self.fields['major'].empty_label = "-- เลือกสาขา --"
+        self.fields['specialization'].empty_label = "-- เลือกแขนง --"
+
+        if user and user.groups.filter(name="Student").exists():
+            for field in ['major', 'specialization', 'year']:
+                self.fields[field].widget.attrs.update({
+                    'readonly': True,
+                    'class': self.fields[field].widget.attrs.get('class', '') + ' cursor-not-allowed'
+                })
+
+    
+class ProfileUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ['image']
+        widgets = {
+            'image': forms.FileInput(attrs={'class': 'hidden'})
+        }
+
