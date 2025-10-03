@@ -13,7 +13,7 @@
 {% block content %}
 <div class="bg-white rounded-xl shadow-lg mb-6 p-2">
     <div class="flex flex-wrap gap-2">
-        <button onclick="showTab('users')" id="usersTab"
+        <a href="{% url 'admin_view' %}"
             class="tab-btn flex-1 sm:flex-none px-6 py-3 rounded-lg bg-gradient-to-r from-slate-800 to-gray-800 text-white font-medium transition-all">
             <div class="flex items-center justify-center space-x-2">
                 <svg class="hidden sm:flex w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -23,8 +23,8 @@
                 </svg>
                 <span>จัดการผู้ใช้</span>
             </div>
-        </button>
-        <button onclick="showTab('courses')" id="coursesTab"
+        </a>
+        <a href="{% url 'admin_course_view' %}" 
             class="tab-btn flex-1 sm:flex-none px-6 py-3 rounded-lg bg-gray-100 text-gray-700 font-medium transition-all hover:bg-gray-200">
             <div class="flex items-center justify-center space-x-2">
                 <svg class="hidden sm:flex w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -34,7 +34,7 @@
                 </svg>
                 <span>จัดการคอร์ส</span>
             </div>
-        </button>
+        </a>
         <button onclick="showTab('announcements')" id="announcementsTab"
             class="tab-btn flex-1 sm:flex-none px-6 py-3 rounded-lg bg-gray-100 text-gray-700 font-medium transition-all hover:bg-gray-200">
             <div class="flex items-center justify-center space-x-2">
@@ -113,7 +113,7 @@
                         </div>
                         {% if not enroll.is_approved %}
                         <div class="flex space-x-2">
-                            <button class="flex-1 px-4 py-2 bg-yellow-100 text-yellow-700 rounded-lg hover:bg-yellow-200 transition-all text-sm font-medium"><i class="fa-regular fa-pen-to-square text-yellow-500"></i> แก้ไข</button>
+                            <a href="{% url 'edit_profile_view' u.username %}" class="flex-1 px-4 py-2 bg-yellow-100 text-yellow-700 text-center rounded-lg hover:bg-yellow-200 transition-all text-sm font-medium"><i class="fa-regular fa-pen-to-square text-yellow-500"></i> แก้ไข</a>
                             <button class="flex-1 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-all text-sm font-medium"><i class="fa-solid fa-trash-can"></i> ลบ</button>
                         </div>
                         {% endif %}

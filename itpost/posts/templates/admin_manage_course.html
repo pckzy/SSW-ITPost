@@ -1,0 +1,137 @@
+{% extends 'admin_base.html' %}
+
+{% load static %}
+
+{% load custom_filter %}
+
+{% block title %}หน้าผู้ดูแล - ITPost{% endblock %}
+
+{% block navbar %}
+{% include 'nav_admin.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-xl shadow-lg mb-6 p-2">
+    <div class="flex flex-wrap gap-2">
+        <a href="{% url 'admin_view' %}"
+            class="tab-btn flex-1 sm:flex-none px-6 py-3 rounded-lg bg-gray-100 text-gray-700 font-medium transition-all">
+            <div class="flex items-center justify-center space-x-2">
+                <svg class="hidden sm:flex w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z">
+                    </path>
+                </svg>
+                <span>จัดการผู้ใช้</span>
+            </div>
+        </a>
+        <a href="{% url 'admin_course_view' %}"
+            class="tab-btn flex-1 sm:flex-none px-6 py-3 rounded-lg bg-gradient-to-r from-slate-800 to-gray-800 text-white font-medium transition-all hover:bg-gray-200">
+            <div class="flex items-center justify-center space-x-2">
+                <svg class="hidden sm:flex w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253">
+                    </path>
+                </svg>
+                <span>จัดการคอร์ส</span>
+            </div>
+        </a>
+        <button onclick="showTab('announcements')" id="announcementsTab"
+            class="tab-btn flex-1 sm:flex-none px-6 py-3 rounded-lg bg-gray-100 text-gray-700 font-medium transition-all hover:bg-gray-200">
+            <div class="flex items-center justify-center space-x-2">
+                <svg class="hidden sm:flex w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z">
+                    </path>
+                </svg>
+                <span>จัดการประกาศ</span>
+            </div>
+        </button>
+    </div>
+</div>
+
+
+<div class="space-y-6">
+    <div class="bg-white rounded-xl shadow-lg p-6">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">จัดการคอร์ส</h2>
+            <div class="flex items-center space-x-2">
+                <input id="search" type="text" placeholder="ค้นหาชื่อคอร์ส..."
+                    class="px-4 py-2 border bg-white border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value="{{ request.GET.search }}">
+                <div class="p-2 bg-slate-200 text-slate-800-600 rounded-lg hover:bg-slate-300">
+                    <i class="fa-solid fa-filter"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            {% for c in course_lists %}
+            <div class="p-6 border-2 border-gray-200 rounded-xl hover:border-blue-400 hover:shadow-lg transition-all">
+                <div class="flex justify-between items-start mb-4">
+                    <span class="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full">{{ c.course_code }}</span>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-800 mb-2">{{ c.course_name }}</h3>
+                <p class="text-gray-600 text-sm mb-4">{{ c.description }}</p>
+
+                <div class="flex items-center justify-between mb-4 text-sm text-gray-500">
+                    <div class="flex items-center space-x-1">
+                        <i class="fa-regular fa-circle-user"></i>
+                        <span>{{ c.student_count }} คน</span>
+                    </div>
+                    <div class="flex items-center space-x-1">
+                        <i class="fa-solid fa-bullhorn"></i>
+                        <span>{{ c.post_count }} ประกาศ</span>
+                    </div>
+                </div>
+
+                <div class="flex space-x-2">
+                    <a href="{% url 'course_detail' c.course_code %}"
+                        class="flex flex-1 justify-center items-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all text-sm font-medium">
+                        ดูรายละเอียด
+                    </a>
+                    <a href="{% url 'course_edit_view' c.id %}"
+                        class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all">
+                        <i class="fa-regular fa-pen-to-square text-gray-600"></i>
+                    </a>
+                    <button class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all">
+                        <i class="fa-regular fa-trash-can text-red-600"></i>
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+
+        </div>
+        {% if course_lists.has_other_pages %}
+        <div class="flex justify-center mt-8">
+            <div class="flex items-center space-x-2">
+                {% if course_lists.has_previous %}
+                <a href="?{% update_query request page=course_lists.previous_page_number %}"
+                    class="px-3 py-2 bg-white border border-gray-300 text-gray-500 hover:bg-gray-50 rounded-lg transition">
+                    < ก่อนหน้า </a>
+                        {% endif %}
+
+                        <span class="px-4 py-2 bg-slate-800 text-white rounded-lg">
+                            หน้า {{ course_lists.number }} จาก {{ course_lists.paginator.num_pages }}
+                        </span>
+
+                        {% if course_lists.has_next %}
+                        <a href="?{% update_query request page=course_lists.next_page_number %}"
+                            class="px-3 py-2 bg-white border border-gray-300 text-gray-500 hover:bg-gray-50 rounded-lg transition">
+                            ถัดไป >
+                        </a>
+                        {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+
+</div>
+
+
+
+{% endblock %}
+
+{% block script%}
+<script src="{% static '/js/admin_course.js' %}"></script>
+{% endblock %}

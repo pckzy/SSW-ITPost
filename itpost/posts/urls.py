@@ -20,5 +20,6 @@ urlpatterns = [
     path("manage_course/create_posts/", views.ProfCreatePostView.as_view(), name="prof_create_post_view"),
     path("manage_course/edit_course/<int:course_id>/", views.EditCourseView.as_view(), name="course_edit_view"),
     path("administrator/", views.AdminView.as_view(), name="admin_view"),
+    path("administrator/courses", views.AdminCourseView.as_view(), name="admin_course_view"),
     path("api/enroll_course/<int:course_id>/", views.EnrollCourseAPIView.as_view(), name="enroll_course_view"),
 ]
