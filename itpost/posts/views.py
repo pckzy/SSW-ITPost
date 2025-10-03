@@ -349,3 +349,23 @@ class EnrollCourseAPIView(APIView):
 
         return Response({'success': True, 'message': 'Enrollment approve sent'}, status=status.HTTP_200_OK)
 
+
+class ProfileView(LoginRequiredMixin, View):
+    def get(self, request, username):
+        context = get_user_context(request.user)
+        request.session['return_to'] = request.path
+
+        try:
+            users = User.objects.get(username=username)
+        except User.DoesNotExist:
+            return redirect('/')
+
+        if users.groups.filter(name="Student").exists():
+            courses = Course.objects.filter(enrollments__student=users, enrollments__is_approved=True)
+        elif users.groups.filter(name="Professor").exists():
+            courses = Course.objects.filter(created_by=users)
+        
+        context['courses'] = courses
+        context['users'] = users
+
+        return render(request, 'user_profile.html', context)

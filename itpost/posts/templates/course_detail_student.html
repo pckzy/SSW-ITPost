@@ -74,10 +74,10 @@
                         <div class="flex items-start justify-between mb-3">
                             <div class="flex-1">
                                 <div class="font-semibold text-gray-900 mb-1">
-                                    <a href="" class="hover:text-indigo-600">{{ std.first_name }} {{ std.last_name }}</a>
+                                    <a href="{% url 'profile_view' std.username %}" class="hover:text-indigo-600">{{ std.first_name }} {{ std.last_name }}</a>
                                 </div>
                                 <div class="text-sm text-gray-600 mb-2">
-                                    <a href="" class="hover:text-indigo-600">{{ std.email }}</a>
+                                    <a href="{% url 'profile_view' std.username %}" class="hover:text-indigo-600">{{ std.email }}</a>
                                 </div>
                             </div>
                             <div class="flex flex-col items-end space-y-2">
@@ -125,10 +125,10 @@
                         {% with std=enroll.student %}
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 text-sm text-gray-900">
-                                <a href="" class="hover:text-indigo-600 hover:underline">{{ std.username }}</a>
+                                <a href="{% url 'profile_view' std.username %}" class="hover:text-indigo-600 hover:underline">{{ std.username }}</a>
                             </td>
                             <td class="px-6 py-4 text-sm font-semibold text-gray-900 whitespace-nowrap">
-                                <a href="" class="hover:text-indigo-600 hover:underline">{{ std.first_name }} {{ std.last_name }}</a>
+                                <a href="{% url 'profile_view' std.username %}" class="hover:text-indigo-600 hover:underline">{{ std.first_name }} {{ std.last_name }}</a>
                             </td>
                             <td class="px-6 py-4">
                                 {% if std.groups.first.name == 'Professor' %}
