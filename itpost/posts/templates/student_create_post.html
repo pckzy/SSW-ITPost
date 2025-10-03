@@ -7,7 +7,11 @@
 {% block title %}สร้างโพสต์ - ITPost{% endblock %}
 
 {% block navbar %}
+{% if user|in_group:"Admin" %}
+    {% include 'nav_admin.html' %}
+{% else %}
     {% include 'navbar.html' %}
+{% endif %}
 {% endblock %}
 
 {% block content %}

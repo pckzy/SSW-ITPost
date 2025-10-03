@@ -230,8 +230,9 @@ class UserUpdateForm(forms.ModelForm):
         if qs.exists():
             raise forms.ValidationError("ชื่อผู้ใช้นี้มีอยู่แล้วในระบบ")
 
-        if not re.match(pattern, username):
-           raise forms.ValidationError('รหัสนักศึกษาเท่านั้น')
+        if not self.instance.groups.filter(name="Professor").exists():
+            if not re.match(pattern, username):
+                raise forms.ValidationError('รหัสนักศึกษาเท่านั้น')
 
         return username
 

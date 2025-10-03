@@ -35,7 +35,7 @@ class MainView(LoginRequiredMixin, View):
         elif user.groups.filter(name="Student").exists():
             return redirect('student_view')
         else:
-            return render(request, 'base.html', context)
+            return redirect('admin_view')
         
 
 class StudentView(LoginRequiredMixin, View):
@@ -155,10 +155,10 @@ class EditCourseView(LoginRequiredMixin, PermissionRequiredMixin, View):
         context = get_user_context(request.user)
         course = Course.objects.get(pk=course_id)
 
-        if course.created_by == user:
+        if course.created_by == user or user.is_staff:
             course_form = CourseForm(instance=course)
             context['course_form'] = course_form
-            context['course_id'] = course_id
+            context['course'] = course
             return render(request, 'edit_course.html', context)
         
         return redirect('back')
@@ -169,7 +169,7 @@ class EditCourseView(LoginRequiredMixin, PermissionRequiredMixin, View):
         course = Course.objects.get(pk=course_id)
         course_form = CourseForm(request.POST, instance=course)
 
-        if course.created_by == user:
+        if course.created_by == user or user.is_staff:
             if course_form.is_valid():
                 course_form.save()
                 return redirect('manage_course_view')
@@ -451,3 +451,16 @@ class EditProfileView(LoginRequiredMixin, View):
 
         else:
             return redirect('/')
+
+
+class AdminView(LoginRequiredMixin, PermissionRequiredMixin, View):
+    permission_required = 'posts.change_group'
+    
+    def get(self, request):
+        context = get_user_context(request.user)
+        request.session['return_to'] = request.path
+        users = User.objects.all().order_by('username')
+        all_groups = Group.objects.all()
+        context['users'] = users
+        context['all_groups'] = all_groups
+        return render(request, 'admin_dashboard.html', context)

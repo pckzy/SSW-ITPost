@@ -7,7 +7,11 @@
 {% block title %}หน้าหลัก - ITPost{% endblock %}
 
 {% block navbar %}
-{% include 'navbar.html' %}
+{% if user|in_group:"Admin" %}
+    {% include 'nav_admin.html' %}
+{% else %}
+    {% include 'navbar.html' %}
+{% endif %}
 {% endblock %}
 
 {% block content %}
