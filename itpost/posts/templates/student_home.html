@@ -48,6 +48,7 @@
                     <span>ประกาศทั่วไป</span>
                 </div>
             </a>
+            {% if user|in_group:'Student' %}
             <a href="{% url 'student_course_view' %}" class="flex-1 sm:flex-none px-6 py-3 rounded-lg bg-gray-100 text-gray-700 font-medium transition-all hover:bg-gray-200">
                 <div class="flex items-center justify-center space-x-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -56,6 +57,16 @@
                     <span>คอร์สเรียน</span>
                 </div>
             </a>
+            {% else %}
+            <a href="{% url 'prof_manage_course_view' %}" class="flex-1 sm:flex-none px-6 py-3 rounded-lg bg-gray-100 text-gray-700 font-medium transition-all hover:bg-gray-200">
+                <div class="flex items-center justify-center space-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                    </svg>
+                    <span>จัดการคอร์สเรียน</span>
+                </div>
+            </a>
+            {% endif %}
         </div>
     </div>
 
@@ -98,7 +109,7 @@
             {% for post in posts %}
             <div id="post-{{ post.id }}" class="rounded-xl p-4 mb-6 bg-white shadow-lg">
                 <div class="flex items-center rounded-lg select-none">
-                    <img class="w-16 h-16 rounded-full border-4 border-gray-200 object-cover" src="{% if post.annonymous %} /media/profile/no-profile.png {% else %} /media/{{ user.profile.image }} {% endif %}" alt="Profile">
+                    <img class="w-16 h-16 rounded-full border-4 border-gray-200 object-cover" src="{% if post.annonymous %} /media/profile/no-profile.png {% else %} /media/{{ post.created_by.profile.image }} {% endif %}" alt="Profile">
                     <div class="ml-3 flex-1">
                         <div class="">
                             {% if post.annonymous %}

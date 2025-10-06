@@ -28,7 +28,7 @@ class MainView(LoginRequiredMixin, View):
         user = request.user
 
         if user.groups.filter(name="Professor").exists():
-            return redirect('manage_course_view')
+            return redirect('prof_manage_course_view')
         elif user.groups.filter(name="Student").exists():
             return redirect('student_view')
         else:
@@ -162,6 +162,39 @@ class ManageCourseView(LoginRequiredMixin, PermissionRequiredMixin, View):
         context['specialization_choices'] = Specialization.objects.all()
 
         return render(request, 'professor_page.html', context)
+    
+
+class ProfManageCourseView(LoginRequiredMixin, PermissionRequiredMixin, View):
+    permission_required = 'posts.add_course'
+
+    def get(self, request):
+        request.session['return_to'] = request.path
+        context = get_user_context(request.user)
+
+        latest_post = Post.objects.filter(course=OuterRef('pk')).order_by('-created_at')
+
+        course_lists = Course.objects.filter(
+            created_by=request.user
+        ).annotate(
+            latest_post_title=Subquery(latest_post.values('title')[:1]),
+            latest_post_created=Subquery(latest_post.values('created_at')[:1])
+        ).distinct().order_by('-created_at')
+
+        course_form = CourseForm()
+
+        colors1 = ['blue', 'emerald', 'orange']
+
+        for i, course in enumerate(course_lists):
+            course.color = colors1[i % len(colors1)]
+
+        context['course_form'] = course_form
+        context['course_lists'] = course_lists
+
+        context['year_choices'] = YearOption.objects.all()
+        context['major_choices'] = Major.objects.all()
+        context['specialization_choices'] = Specialization.objects.all()
+
+        return render(request, 'prof_manage_course.html', context)
 
 class EditCourseView(LoginRequiredMixin, PermissionRequiredMixin, View):
     permission_required = 'posts.change_course'
