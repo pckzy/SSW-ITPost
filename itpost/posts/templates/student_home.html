@@ -97,14 +97,14 @@
 
             {% for post in posts %}
             <div id="post-{{ post.id }}" class="rounded-xl p-4 mb-6 bg-white shadow-lg">
-                <div class="flex items-center rounded-lg">
+                <div class="flex items-center rounded-lg select-none">
                     <img class="w-16 h-16 rounded-full border-4 border-gray-200 object-cover" src="{% if post.annonymous %} /media/profile/no-profile.png {% else %} /media/{{ user.profile.image }} {% endif %}" alt="Profile">
                     <div class="ml-3 flex-1">
                         <div class="">
                             {% if post.annonymous %}
-                                <div class="text-xl font-medium text-gray-800 select-none">ไม่ระบุตัวตน</div>
+                                <div class="text-xl font-medium text-gray-800">ไม่ระบุตัวตน</div>
                             {% else %}
-                                <div class="text-xl font-medium text-gray-800 select-none"><a href="{% url 'profile_view' post.created_by.username %}">{{ post.created_by.first_name }} {{ post.created_by.last_name }}</a></div>
+                                <div class="text-xl font-medium text-gray-800"><a href="{% url 'profile_view' post.created_by.username %}">{{ post.created_by.first_name }} {{ post.created_by.last_name }}</a></div>
                             {% endif %}
                         </div>
                         <div class="text-sm text-gray-500 my-1 flex flex-wrap items-center gap-1">
@@ -147,7 +147,10 @@
                                 <span class="text-white bg-green-600 rounded px-2 py-0.5 text-xs font-medium">{{ post.course.course_code }} - {{ post.course.course_name }}</span>
                             {% endif %}
                             <span class="px-1 text-gray-400">|</span>
-                            <span class="text-gray-500 text-xs">{{ post.last_updated|date:"d M Y H:i" }}</span>
+                            <span class="text-gray-500 text-xs">{{ post.last_updated|time_since }}</span>
+                            {% if post.created_at|date:"d M Y H:i:s" != post.last_updated|date:"d M Y H:i:s" %}
+                                <span class="text-gray-400"> (แก้ไขล่าสุด)</span>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
