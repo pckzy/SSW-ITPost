@@ -50,6 +50,7 @@ class StudentView(LoginRequiredMixin, PermissionRequiredMixin, View):
             Q(course__enrollments__student=user) |
             Q(course__isnull=True),
             #status='approved',
+            course__isnull=True,
             ).order_by('-created_at')
 
         filter = request.GET.get('filter')
