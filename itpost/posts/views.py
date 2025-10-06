@@ -338,18 +338,50 @@ class RegisterView(View):
 
 class ProfileView(LoginRequiredMixin, View):
     def get(self, request, username):
-        context = get_user_context(request.user)
+        user = request.user
+        context = get_user_context(user)
         request.session['return_to'] = request.path
 
         try:
             users = User.objects.get(username=username)
         except User.DoesNotExist:
             return redirect('/')
+        
+        post_counts = {
+            'approved': Post.objects.filter(created_by=users, status=Post.PostStatus.APPROVED).count(),
+            'pending': Post.objects.filter(created_by=users, status=Post.PostStatus.PENDING).count(),
+            'rejected': Post.objects.filter(created_by=users, status=Post.PostStatus.REJECTED).count(),
+        }
+        liked_posts = Post.objects.filter(liked_by=users).order_by('-created_at')
+        context['post_counts'] = post_counts
+        context['liked_posts'] = liked_posts
 
         if users.groups.filter(name="Student").exists():
             courses = Course.objects.filter(enrollments__student=users, enrollments__is_approved=True)
+
+            posts = Post.objects.filter(
+                course__isnull=True,
+                status=Post.PostStatus.APPROVED,
+                created_by=users
+            ).order_by('-created_at')
+
+            if user.groups.filter(name="Student").exists():
+                info = user.academic_info
+                posts = posts.filter(
+                    Q(years__year=info.year) |
+                    Q(majors=info.major) |
+                    Q(specializations=info.specialization)
+                ).distinct().order_by('-created_at')
+            context['posts'] = posts
+
+
         elif users.groups.filter(name="Professor").exists():
             courses = Course.objects.filter(created_by=users)
+
+            if user == users or user.is_staff:
+                posts = Post.objects.filter(created_by=users).order_by('-created_at')
+                context['posts'] = posts
+
         else:
             return redirect('/')
         
