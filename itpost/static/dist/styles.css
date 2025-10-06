@@ -1447,6 +1447,9 @@
   .text-yellow-700 {
     color: var(--color-yellow-700);
   }
+  .italic {
+    font-style: italic;
+  }
   .underline {
     text-decoration-line: underline;
   }
