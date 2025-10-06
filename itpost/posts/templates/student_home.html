@@ -98,7 +98,7 @@
             {% for post in posts %}
             <div id="post-{{ post.id }}" class="rounded-xl p-4 mb-6 bg-white shadow-lg">
                 <div class="flex items-center rounded-lg">
-                    <img class="w-16 h-16 rounded-full border-4 border-gray-200 object-cover" src="{% if post.annonymous %} /media/profile/no-profile.png {% else %} /media/{{ user.profile.image }} {% endif %}" alt="Profile">
+                    <img class="w-16 h-16 rounded-full border-4 border-gray-200 object-cover" src="{% if post.annonymous %} /media/profile/no-profile.png {% else %} /media/{{ post.created_by.profile.image }} {% endif %}" alt="Profile">
                     <div class="ml-3 flex-1">
                         <div class="">
                             {% if post.annonymous %}
@@ -248,7 +248,7 @@
                 </div>
 
                 <!-- Comments List -->
-                <div class="comments-list flex-1 overflow-y-auto p-6 space-y-4" style="max-height: 400px;">
+                <div class="comments-list flex-1 overflow-y-auto p-6 space-y-4" style="max-height: 400px;" id="comments-list">
 
                 </div>
 

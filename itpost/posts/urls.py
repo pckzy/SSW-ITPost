@@ -21,9 +21,4 @@ urlpatterns = [
     path("manage_course/edit_course/<int:course_id>/", views.EditCourseView.as_view(), name="course_edit_view"),
     path("administrator/", views.AdminView.as_view(), name="admin_view"),
     path("administrator/courses", views.AdminCourseView.as_view(), name="admin_course_view"),
-    path("api/enroll_course/<int:course_id>/", views.EnrollCourseAPIView.as_view(), name="enroll_course_view"),
-    path("like/<int:post_id>/", views.ToggleLikeView.as_view(), name="toggle_like"),
-    path("delete/<int:post_id>/", views.DeletePostView.as_view(), name="delete_post"),
-    path("comments/<int:post_id>/", views.PostCommentView.as_view(), name="post_comment"),
-    path("comments/<int:post_id>/create/", views.PostCommentView.as_view(), name="comment_create"),
 ]

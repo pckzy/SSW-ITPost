@@ -10,11 +10,6 @@ from django.core.paginator import Paginator
 
 from .models import *
 from .forms import *
-from .serializers import *
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
 
 
 def get_user_context(user):
@@ -47,9 +42,6 @@ class StudentView(LoginRequiredMixin, PermissionRequiredMixin, View):
         request.session['return_to'] = request.path
         user = request.user
         posts = Post.objects.filter(
-            Q(course__enrollments__student=user) |
-            Q(course__isnull=True),
-            #status='approved',
             course__isnull=True,
             ).order_by('-created_at')
 
@@ -102,54 +94,6 @@ class StudentCreatePostView(LoginRequiredMixin, PermissionRequiredMixin, View):
         context = get_user_context(request.user)
         context['form'] = form
         return render(request, 'student_create_post.html', context)
-    
-class PostCommentView(LoginRequiredMixin, PermissionRequiredMixin, APIView):
-    permission_required = 'posts.view_comment'
-    def get(self, request, post_id):
-        post = Post.objects.get(pk=post_id)
-
-        comments = Comment.objects.filter(post=post).order_by("-created_at")
-        serializer = CommentSerializer(comments, many=True)
-        return Response({
-            "success": True,
-            "post_title": post.title,
-            "comments": serializer.data
-        })
-    
-    def post(self, request, post_id):
-        post = Post.objects.get(pk=post_id)
-        user = request.user
-
-        comment = Comment.objects.create(
-            post=post,
-            user=user,
-            content=request.data.get("content", "")
-        )
-
-        serializer = CommentSerializer(comment)
-        return Response({"success": True, "comment": serializer.data}, status=201)
-
-class ToggleLikeView(LoginRequiredMixin, APIView):
-    def post(self, request, post_id):
-        user = request.user
-        post = Post.objects.get(pk=post_id)
-
-        if user in post.liked_by.all():
-            post.liked_by.remove(user)
-            liked = False
-        else:
-            post.liked_by.add(user)
-            liked = True
-
-        return Response({'success': True, 'liked': liked, 'count': post.liked_by.count()})
-    
-class DeletePostView(LoginRequiredMixin, PermissionRequiredMixin, APIView):
-    permission_required = 'posts.delete_post'
-    def post(self, request, post_id):
-        post = Post.objects.get(pk=post_id)
-        post.delete()
-        
-        return Response({'success': True})
         
 class StudentCourseView(LoginRequiredMixin, PermissionRequiredMixin, View):
     permission_required = 'posts.view_course'
@@ -390,37 +334,6 @@ class RegisterView(View):
             'academic_form': academic_form
         }
         return render(request, 'register_page.html', context)
-
-
-
-class EnrollCourseAPIView(APIView):
-    def post(self, request, course_id):
-        user = request.user
-
-        try:
-            course = Course.objects.get(pk=course_id)
-        except Course.DoesNotExist:
-            return Response({'error': 'Course not found'}, status=status.HTTP_404_NOT_FOUND)
-
-        existing = Enrollment.objects.filter(student=user, course=course).first()
-        if existing:
-            return Response({'success': False, 'message': 'Already Enrolled'}, status=status.HTTP_200_OK)
-
-        enroll = Enrollment.objects.create(student=user, course=course)
-
-        return Response({'success': True, 'message': 'Enrollment request sent', 'enrollment_id': enroll.id}, status=status.HTTP_201_CREATED)
-    
-    def put(self, request, course_id):
-
-        try:
-            enrollments = Enrollment.objects.get(pk=course_id)
-        except Enrollment.DoesNotExist:
-            return Response({'error': 'Enrollment not found'}, status=status.HTTP_404_NOT_FOUND)
-        
-        enrollments.is_approved = True
-        enrollments.save()
-
-        return Response({'success': True, 'message': 'Enrollment approve sent'}, status=status.HTTP_200_OK)
 
 
 class ProfileView(LoginRequiredMixin, View):

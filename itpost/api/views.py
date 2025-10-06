@@ -1,9 +1,16 @@
 from django.shortcuts import render
 
 from rest_framework.decorators import api_view
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import CourseSerializer
+from .serializers import CourseSerializer, CommentSerializer, EnrollmentSerializer
+
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.shortcuts import get_object_or_404
+
+
+from posts.models import *
 
 @api_view(['POST'])
 def create_course_api(request):
@@ -24,3 +31,86 @@ def create_course_api(request):
         }, status=status.HTTP_201_CREATED)
 
     return Response({'success': False, 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ToggleLikeView(LoginRequiredMixin, APIView):
+    def post(self, request, post_id):
+        user = request.user
+        post = Post.objects.get(pk=post_id)
+
+        if user in post.liked_by.all():
+            post.liked_by.remove(user)
+            liked = False
+        else:
+            post.liked_by.add(user)
+            liked = True
+
+        return Response({'success': True, 'liked': liked, 'count': post.liked_by.count()})
+    
+
+class PostCommentView(LoginRequiredMixin, PermissionRequiredMixin, APIView):
+    permission_required = 'posts.view_comment'
+    def get(self, request, post_id):
+        post = Post.objects.get(pk=post_id)
+
+        comments = Comment.objects.filter(post=post).order_by("-created_at")
+        serializer = CommentSerializer(comments, many=True)
+        return Response({
+            "success": True,
+            "post_title": post.title,
+            "comments": serializer.data
+        })
+
+    
+    def post(self, request, post_id):
+        post = Post.objects.get(pk=post_id)
+        user = request.user
+
+        comment = Comment.objects.create(
+            post=post,
+            user=user,
+            content=request.data.get("content", "")
+        )
+
+        serializer = CommentSerializer(comment)
+        return Response({"success": True, "comment": serializer.data}, status=201)
+    
+
+class EnrollCourseAPIView(APIView):
+    def post(self, request, course_id):
+        user = request.user
+
+        try:
+            course = Course.objects.get(pk=course_id)
+        except Course.DoesNotExist:
+            return Response({'error': 'Course not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        existing = Enrollment.objects.filter(student=user, course=course).first()
+        if existing:
+            return Response({'success': False, 'message': 'Already Enrolled'}, status=status.HTTP_200_OK)
+
+        enroll = Enrollment.objects.create(student=user, course=course)
+        serializer = EnrollmentSerializer(enroll)
+
+        return Response({'success': True, 'message': 'Enrollment request sent', 'enrollment': serializer.data}, status=status.HTTP_201_CREATED)
+    
+    def put(self, request, course_id):
+
+        try:
+            enrollments = Enrollment.objects.get(pk=course_id)
+        except Enrollment.DoesNotExist:
+            return Response({'error': 'Enrollment not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        enrollments.is_approved = True
+        enrollments.save()
+
+        return Response({'success': True, 'message': 'Enrollment approve sent'}, status=status.HTTP_200_OK)
+    
+
+class DeletePostView(LoginRequiredMixin, PermissionRequiredMixin, APIView):
+    permission_required = 'posts.delete_post'
+    def post(self, request, post_id):
+        post = Post.objects.get(pk=post_id)
+        post.delete()
+        
+        return Response({'success': True})

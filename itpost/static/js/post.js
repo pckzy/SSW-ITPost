@@ -15,7 +15,7 @@ document.addEventListener('click', function (e) {
 
 
 function openCommentModal(postId) {
-    fetch(`/comments/${postId}/`)
+    fetch(`/api/comments/${postId}/`)
     .then(response => response.json())
     .then(data => {
         if (data.success) {
@@ -71,7 +71,7 @@ function openCommentModal(postId) {
                 const csrfToken = document.getElementById('csrfToken').value;
                 const formData = new FormData(this);
                 
-                fetch(`/comments/${postId}/create/`, {
+                fetch(`/api/comments/${postId}/`, {
                     method: "POST",
                     body: formData,
                     headers: {
@@ -89,8 +89,10 @@ function openCommentModal(postId) {
                         if (comment_count) {
                             comment_count.innerText = Number(comment_count.innerText) + 1
                         }
-                        const newComment = `
-                        <div class="mb-3">
+                        const comments_list = document.getElementById('comments-list')
+                        const newComment = document.createElement('div');
+                        newComment.className = 'mb-3';
+                        newComment.innerHTML = `
                             <div class="flex items-center space-x-3">
                                 <img class="w-10 h-10 rounded-full border-2 border-blue-100 object-cover" 
                                     src="/media/${data.comment.image}" alt="User">
@@ -105,9 +107,8 @@ function openCommentModal(postId) {
                                     </p>
                                 </div>
                             </div>
-                        </div>
                         `;
-                        document.querySelector('#commentModal .comments-list').innerHTML += newComment;
+                        comments_list.prepend(newComment)
                         this.reset();
                     } else {
                         alert("Error: " + JSON.stringify(data.errors));
@@ -144,7 +145,7 @@ function deletePost() {
         const headers = {};
         if (csrf) headers['X-CSRFToken'] = csrf.value;
 
-        fetch(`/delete/${postId}/`, { method: 'POST', headers: headers })
+        fetch(`/api/delete/${postId}/`, { method: 'POST', headers: headers })
         .then(r => r.json())
         .then(data => {
             if (data.success) {
@@ -185,9 +186,10 @@ document.addEventListener('click', function (e) {
     var postId = btn.getAttribute('data-post-id');
     var csrf = document.querySelector('input[name="csrfmiddlewaretoken"]');
     var headers = {};
+    console.log(csrf)
     if (csrf) headers['X-CSRFToken'] = csrf.value;
 
-    fetch(`/like/${postId}/`, {
+    fetch(`/api/like/${postId}/`, {
         method: 'POST',
         headers: headers
     }).then(r => r.json()).then(data => {
@@ -209,47 +211,3 @@ document.addEventListener('click', function (e) {
         }
     });
 });
-
-// var tagSelector = new MultiSelectTag('year', {
-//     maxSelection: 4,
-//     required: false,
-//     placeholder: 'เลือกชั้นปี',
-//     onChange: function (selected) {
-//         console.log('Selection changed:', selected);
-//     }
-// });
-// var tagSelector = new MultiSelectTag('major', {
-//     maxSelection: 4,
-//     required: false,
-//     placeholder: 'เลือกสาขา',
-//     onChange: function (selected) {
-//         console.log('Selection changed:', selected);
-//     }
-// });
-// var tagSelector = new MultiSelectTag('specialization', {
-//     maxSelection: 5,
-//     required: false,
-//     placeholder: 'เลือกแขนง',
-//     onChange: function (selected) {
-//         console.log('Selection changed:', selected);
-//     }
-// });
-
-// //Enter key in search input
-// (function () {
-//         const searchInput = document.getElementById('search');
-//         if (!searchInput) return;
-
-//         searchInput.addEventListener('keydown', function (e) {
-//             const isEnter = e.key === 'Enter';
-//             if (!isEnter) return;
-//             // Prevent default to avoid double submission, then submit the form programmatically
-//             e.preventDefault();
-//             // Find the nearest form ancestor
-//             let el = this;
-//             while (el && el.tagName !== 'FORM') el = el.parentElement;
-//             if (el && typeof el.submit === 'function') {
-//                 el.submit();
-//             }
-//         });
-//     })();
