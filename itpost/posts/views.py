@@ -5,6 +5,7 @@ from django.contrib.auth import login, logout, update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.auth.models import User, Group
 from django.db.models import Q, OuterRef, Subquery, Exists
+from django.core.paginator import Paginator
 
 
 from .models import *
@@ -36,7 +37,7 @@ class MainView(LoginRequiredMixin, View):
         elif user.groups.filter(name="Student").exists():
             return redirect('student_view')
         else:
-            return render(request, 'base.html', context)
+            return redirect('admin_view')
         
 
 class StudentView(LoginRequiredMixin, PermissionRequiredMixin, View):
@@ -204,29 +205,16 @@ class ManageCourseView(LoginRequiredMixin, PermissionRequiredMixin, View):
     def get(self, request):
         request.session['return_to'] = request.path
         context = get_user_context(request.user)
-        course_lists = Course.objects.filter(created_by=request.user)
+        course_lists = Course.objects.filter(created_by=request.user).order_by('-created_at')
 
         course_form = CourseForm()
 
         context['course_form'] = course_form
         context['course_lists'] = course_lists
 
-        return render(request, 'professor_page.html', context)
-    
-    def post(self, request):
-        context = get_user_context(request.user)
-        course_form = CourseForm(request.POST)
-
-        if course_form.is_valid():
-            course = course_form.save(commit=False)
-            course.created_by = request.user
-            course.save()
-            course_form.save_m2m()
-            return redirect('manage_course_view')
-        
-        course_lists = Course.objects.filter(created_by=request.user)
-        context['course_form'] = course_form
-        context['course_lists'] = course_lists
+        context['year_choices'] = YearOption.objects.all()
+        context['major_choices'] = Major.objects.all()
+        context['specialization_choices'] = Specialization.objects.all()
 
         return render(request, 'professor_page.html', context)
 
@@ -238,10 +226,10 @@ class EditCourseView(LoginRequiredMixin, PermissionRequiredMixin, View):
         context = get_user_context(request.user)
         course = Course.objects.get(pk=course_id)
 
-        if course.created_by == user:
+        if course.created_by == user or user.is_staff:
             course_form = CourseForm(instance=course)
             context['course_form'] = course_form
-            context['course_id'] = course_id
+            context['course'] = course
             return render(request, 'edit_course.html', context)
         
         return redirect('back')
@@ -252,7 +240,7 @@ class EditCourseView(LoginRequiredMixin, PermissionRequiredMixin, View):
         course = Course.objects.get(pk=course_id)
         course_form = CourseForm(request.POST, instance=course)
 
-        if course.created_by == user:
+        if course.created_by == user or user.is_staff:
             if course_form.is_valid():
                 course_form.save()
                 return redirect('manage_course_view')
@@ -534,3 +522,80 @@ class EditProfileView(LoginRequiredMixin, View):
 
         else:
             return redirect('/')
+        
+
+def get_all_info_context(user):
+    user_count = User.objects.all().count()
+    course_count = Course.objects.all().count()
+    post_count = Post.objects.all().count()
+    post_request_count = Post.objects.filter(status='pending').count()
+    group = user.groups.first()
+
+    return {
+        'user': user,
+        'group': group,
+        'user_count': user_count,
+        'course_count': course_count,
+        'post_count': post_count,
+        'post_request_count': post_request_count,
+    }
+
+
+class AdminView(LoginRequiredMixin, PermissionRequiredMixin, View):
+    permission_required = 'posts.change_group'
+    
+    def get(self, request):
+        context = get_all_info_context(request.user)
+
+        search_query = request.GET.get("search", "").strip()
+        group_query = request.GET.get("group", "")
+
+        request.session['return_to'] = request.path
+
+        users = User.objects.all().order_by('username')
+        context['user_count'] = users.count()
+
+        if group_query:
+            users = users.filter(groups__id=group_query)
+
+        if search_query:
+            users = users.filter(
+                Q(username__icontains=search_query) |
+                Q(first_name__icontains=search_query) |
+                Q(last_name__icontains=search_query)
+            )
+
+        all_groups = Group.objects.all()
+
+        context['users'] = users
+        context['all_groups'] = all_groups
+        return render(request, 'admin_dashboard.html', context)
+    
+
+
+class AdminCourseView(LoginRequiredMixin, PermissionRequiredMixin, View):
+    permission_required = 'posts.change_group'
+
+    def get(self, request):
+        context = get_all_info_context(request.user)
+
+        search_query = request.GET.get("search", "").strip()
+
+        request.session['return_to'] = request.path
+
+        course_lists = Course.objects.all().order_by('-created_at')
+
+        if search_query:
+            course_lists = course_lists.filter(
+                Q(course_code__icontains=search_query) |
+                Q(course_name__icontains=search_query) |
+                Q(description__icontains=search_query)
+            )
+
+        paginator = Paginator(course_lists, 3)
+        page_number = request.GET.get('page')
+        courses = paginator.get_page(page_number)
+        
+
+        context['course_lists'] = courses
+        return render(request, 'admin_manage_course.html', context)

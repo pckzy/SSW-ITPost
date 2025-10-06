@@ -7,7 +7,11 @@
 {% block title %}แก้ไขคอร์ส - ITPost{% endblock %}
 
 {% block navbar %}
+{% if user|in_group:"Admin" %}
+    {% include 'nav_admin.html' %}
+{% else %}
     {% include 'navbar.html' %}
+{% endif %}
 {% endblock %}
 
 {% block content %}
@@ -16,13 +20,13 @@
     <div id="coursesContent" class="space-y-6">
         <div class="rounded-xl shadow-lg overflow-hidden">
             <div class="bg-blue-600 p-8 text-white">
-                <h2 class="text-2xl font-bold mb-2">แก้ไขคอร์ส</h2>
+                <h2 class="text-3xl font-bold mb-2">{{ course.course_code}} - {{ course.course_name }} </h2>
                 <p class="text-blue-100">แก้ไขข้อมูลของคอร์ส</p>
             </div>
 
             <div class="transition-all duration-500" id="course-form">
 
-                <form action="{% url 'course_edit_view' course_id %}" method="post" class="bg-white space-y-6 p-8">
+                <form action="{% url 'course_edit_view' course.id %}" method="post" class="bg-white space-y-6 p-8">
                     {% csrf_token %}
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
