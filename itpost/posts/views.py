@@ -9,6 +9,7 @@ from django.db.models import Q, OuterRef, Subquery, Exists
 
 from .models import *
 from .forms import *
+from .serializers import *
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -38,13 +39,17 @@ class MainView(LoginRequiredMixin, View):
             return render(request, 'base.html', context)
         
 
-class StudentView(LoginRequiredMixin, View):
+class StudentView(LoginRequiredMixin, PermissionRequiredMixin, View):
+    permission_required = 'posts.view_post'
     def get(self, request):
         context = get_user_context(request.user)
         request.session['return_to'] = request.path
         user = request.user
-
-        posts = Post.objects.all()
+        posts = Post.objects.filter(
+            Q(course__enrollments__student=user) |
+            Q(course__isnull=True),
+            #status='approved',
+            ).order_by('-created_at')
 
         filter = request.GET.get('filter')
         if filter:
@@ -59,15 +64,93 @@ class StudentView(LoginRequiredMixin, View):
         return render(request, 'student_home.html', context)
     
 
-class StudentCreatePostView(LoginRequiredMixin, View):
+class StudentCreatePostView(LoginRequiredMixin, PermissionRequiredMixin, View):
+    permission_required = 'posts.add_post'
     def get(self, request):
         context = get_user_context(request.user)
         form = StudentPostForm()
         context['form'] = form
         return render(request, 'student_create_post.html', context)
-
+    
+    def post(self, request):
+        form = StudentPostForm(request.POST, request.FILES)
         
-class StudentCourseView(LoginRequiredMixin, View):
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.created_by = request.user
+            post.status = 'pending'
+            post.save()
+            form.save_m2m()
+
+            if post.years.count() == 0 :
+                for i in YearOption.objects.all():
+                    post.years.add(i)
+            if post.majors.count() == 0:
+                for i in Major.objects.all():
+                    post.majors.add(i)
+            if post.specializations.count() == 0:
+                for i in Specialization.objects.all():
+                    post.specializations.add(i)
+
+            for f in request.FILES.getlist('files'):
+                PostFile.objects.create(post=post, file=f)
+
+            return redirect('student_view')
+        
+        context = get_user_context(request.user)
+        context['form'] = form
+        return render(request, 'student_create_post.html', context)
+    
+class PostCommentView(LoginRequiredMixin, PermissionRequiredMixin, APIView):
+    permission_required = 'posts.view_comment'
+    def get(self, request, post_id):
+        post = Post.objects.get(pk=post_id)
+
+        comments = Comment.objects.filter(post=post).order_by("-created_at")
+        serializer = CommentSerializer(comments, many=True)
+        return Response({
+            "success": True,
+            "post_title": post.title,
+            "comments": serializer.data
+        })
+    
+    def post(self, request, post_id):
+        post = Post.objects.get(pk=post_id)
+        user = request.user
+
+        comment = Comment.objects.create(
+            post=post,
+            user=user,
+            content=request.data.get("content", "")
+        )
+
+        serializer = CommentSerializer(comment)
+        return Response({"success": True, "comment": serializer.data}, status=201)
+
+class ToggleLikeView(LoginRequiredMixin, APIView):
+    def post(self, request, post_id):
+        user = request.user
+        post = Post.objects.get(pk=post_id)
+
+        if user in post.liked_by.all():
+            post.liked_by.remove(user)
+            liked = False
+        else:
+            post.liked_by.add(user)
+            liked = True
+
+        return Response({'success': True, 'liked': liked, 'count': post.liked_by.count()})
+    
+class DeletePostView(LoginRequiredMixin, PermissionRequiredMixin, APIView):
+    permission_required = 'posts.delete_post'
+    def post(self, request, post_id):
+        post = Post.objects.get(pk=post_id)
+        post.delete()
+        
+        return Response({'success': True})
+        
+class StudentCourseView(LoginRequiredMixin, PermissionRequiredMixin, View):
+    permission_required = 'posts.view_course'
     def get(self, request):
         context = get_user_context(request.user)
         request.session['return_to'] = request.path

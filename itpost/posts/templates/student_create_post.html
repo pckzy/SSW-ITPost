@@ -81,9 +81,9 @@
                                 multiple>
                         </div>
 
-                        <div class="flex">
-                            <label class="block text-sm font-medium text-gray-700 pr-3">ประกาศแบบไม่ระบุตัวตน</label>
-                           {{ form.annonymous }}
+                        <div class="items-center hidden">
+                            {{ form.annonymous }}
+                            <label class="block text-sm font-medium text-gray-700 pl-3">ไม่ระบุตัวตน</label>
                         </div>
     
                         <div class="flex flex-col sm:flex-row gap-3 pt-4">
@@ -101,4 +101,21 @@
 {% endblock %}
 
 {% block script%}
+<script>
+    const postTypeSelect = document.querySelector('[name="post_type"]');
+    const anonymousField = document.querySelector('[name="annonymous"]').parentElement;
+
+    function toggleAnonymous() {
+        const selected = postTypeSelect.value.toLowerCase();
+        console.log("Selected post type:", selected);
+        if (selected == 3) {
+            anonymousField.style.display = "flex";
+        } else {
+            anonymousField.style.display = "none";
+            document.querySelector('[name="annonymous"]').checked = false;
+        }
+    }
+
+    postTypeSelect.addEventListener("change", toggleAnonymous);
+</script>
 {% endblock %}
