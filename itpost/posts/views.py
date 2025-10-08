@@ -94,6 +94,48 @@ class StudentCreatePostView(LoginRequiredMixin, PermissionRequiredMixin, View):
         context = get_user_context(request.user)
         context['form'] = form
         return render(request, 'student_create_post.html', context)
+    
+class EditPostView(LoginRequiredMixin, PermissionRequiredMixin, View):
+    permission_required = 'posts.change_post'
+    def get(self, request, post_id):
+        context = get_user_context(request.user)
+        post = Post.objects.get(pk=post_id, created_by=request.user)
+        form = StudentPostForm(instance=post)
+
+        context['form'] = form
+        context['post'] = post
+        return render(request, 'edit_post.html', context)
+
+    def post(self, request, post_id):
+        post = Post.objects.get(pk=post_id, created_by=request.user)
+        form = StudentPostForm(request.POST, request.FILES, instance=post)
+        form.instance.post_type = post.post_type 
+        
+        if form.is_valid():
+            print("valid")
+            post = form.save(commit=False)
+            post.status = 'pending'
+            post.save()
+            form.save_m2m()
+
+            if post.years.count() == 0 :
+                form.add_error('years', 'กรุณาเลือกชั้นปี')
+                return render(request, 'edit_post.html', {'form': form, 'post': post})
+            if post.majors.count() == 0:
+                form.add_error('majors', 'กรุณาเลือกสาขา')
+                return render(request, 'edit_post.html', {'form': form, 'post': post})
+
+            if request.FILES.getlist('files'):
+                post.files.all().delete()
+                for f in request.FILES.getlist('files'):
+                    PostFile.objects.create(post=post, file=f)
+
+            return redirect('student_view')
+        print(form.errors)
+        context = get_user_context(request.user)
+        context['form'] = form
+        context['post'] = post
+        return render(request, 'edit_post.html', context)
         
 class StudentCourseView(LoginRequiredMixin, PermissionRequiredMixin, View):
     permission_required = 'posts.view_course'

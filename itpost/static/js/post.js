@@ -13,7 +13,6 @@ document.addEventListener('click', function (e) {
     }
 });
 
-
 function openCommentModal(postId) {
     fetch(`/api/comments/${postId}/`)
     .then(response => response.json())

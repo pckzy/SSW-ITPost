@@ -73,7 +73,7 @@
 
      <div class="space-y-6">
         
-            <div class="bg-indigo-600 rounded-2xl shadow-2xl p-8 text-white">
+            <div class="bg-orange-500 rounded-2xl shadow-2xl p-8 text-white">
                 <div class="flex justify-between">
                     <div class="flex items-center space-x-6 mb-4">
                         <i class="fa-solid fa-bullhorn text-5xl"></i>
@@ -83,7 +83,7 @@
                         </div>
                     </div>
                     <a href="{% url 'student_create_post' %}"
-                        class="bg-white text-indigo-600 px-6 py-3 rounded-lg font-medium hover:bg-indigo-50 transition-all flex items-center md:space-x-2">
+                        class="bg-white text-orange-400 px-6 py-3 rounded-lg font-medium hover:bg-indigo-50 transition-all flex items-center md:space-x-2">
                         <i class="fa-solid fa-plus"></i>
                         <span class="hidden md:block">สร้างประกาศใหม่</span>
                     </a>
@@ -105,7 +105,7 @@
                     </div>
                 </div>
             </div>
-
+            <input type="hidden" name="csrfmiddlewaretoken" id="csrfToken" value="{{ csrf_token }}">
             {% for post in posts %}
             <div id="post-{{ post.id }}" class="rounded-xl p-4 mb-6 bg-white shadow-lg">
                 <div class="flex items-center rounded-lg select-none">
@@ -126,19 +126,19 @@
                             {% else %}
                                 <span class="text-white bg-gray-600 rounded px-2 py-0.5 text-xs font-medium">{{ post.post_type.name }}</span>
                             {% endif %}
-                            {% if post.course is None %}
-                                <span class="px-1 text-gray-400">|</span>
-                                {% for majors in post.majors.all %}
-                                {% if majors.id == 1 %}
-                                <span class="text-white bg-blue-600 rounded px-2 py-0.5 text-xs font-medium">IT</span>
-                                {% elif majors.id == 2 %}
-                                <span class="text-white bg-purple-500 rounded px-2 py-0.5 text-xs font-medium">DSBA</span>
-                                {% elif majors.id == 3 %}
-                                <span class="text-white bg-orange-500 rounded px-2 py-0.5 text-xs font-medium">AIT</span>
-                                {% else %}
-                                <span class="text-white bg-green-600 rounded px-2 py-0.5 text-xs font-medium">BIT</span>
-                                {% endif %}
-                                {% endfor %}
+                            <span class="px-1 text-gray-400">|</span>
+                            {% for majors in post.majors.all %}
+                            {% if majors.id == 1 %}
+                            <span class="text-white bg-blue-600 rounded px-2 py-0.5 text-xs font-medium">IT</span>
+                            {% elif majors.id == 2 %}
+                            <span class="text-white bg-purple-500 rounded px-2 py-0.5 text-xs font-medium">DSBA</span>
+                            {% elif majors.id == 3 %}
+                            <span class="text-white bg-orange-500 rounded px-2 py-0.5 text-xs font-medium">AIT</span>
+                            {% else %}
+                            <span class="text-white bg-green-600 rounded px-2 py-0.5 text-xs font-medium">BIT</span>
+                            {% endif %}
+                            {% endfor %}
+                            {% if post.specializations.all %}
                                 <span class="px-1 text-gray-400">|</span>
                                 {% for spec in post.specializations.all %}
                                 {% if spec.id == 1 %}
@@ -153,9 +153,6 @@
                                 <span class="text-white bg-amber-900 rounded px-2 py-0.5 text-xs font-medium">Data Engineer</span>
                                 {% endif %}
                                 {% endfor %}
-                            {% else %}
-                                <span class="px-1 text-gray-400">|</span>
-                                <span class="text-white bg-green-600 rounded px-2 py-0.5 text-xs font-medium">{{ post.course.course_code }} - {{ post.course.course_name }}</span>
                             {% endif %}
                             <span class="px-1 text-gray-400">|</span>
                             <span class="text-gray-500 text-xs">{{ post.last_updated|time_since }}</span>
@@ -219,7 +216,9 @@
                         <!-- Edit and Delete buttons -->
                         {% if post.created_by.id == user.id %}
                         <button class="flex items-center gap-2 text-blue-500 hover:text-blue-700 transition-colors cursor-pointer duration-200 transform hover:scale-110">
-                            <i class="fas fa-pen-to-square text-xl"></i>
+                            <a href="{% url 'edit_post_view' post.id %}">
+                                <i class="fas fa-pen-to-square text-xl"></i>
+                            </a>
                         </button>
                         {% endif %}
                         {% if user|in_group:'Admin' or post.created_by == user %}
@@ -268,7 +267,6 @@
 
                 <div class="border-t border-gray-200 p-6">
                     <form id="commentForm">
-                        <input type="hidden" name="csrfmiddlewaretoken" id="csrfToken" value="{{ csrf_token }}">
                         <div class="flex space-x-3">
                             <img class="w-10 h-10 rounded-full border-2 border-blue-100 object-cover" 
                                  src="/media/{{ user.profile.image }}" alt="Your Avatar">
