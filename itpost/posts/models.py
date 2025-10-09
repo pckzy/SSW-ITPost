@@ -110,7 +110,7 @@ class Post(models.Model):
     
     def like_count(self):
             return self.liked_by.count()
-    
+
     def clean(self):
         if self.course and not self.post_type.for_course:
             raise ValidationError("โพสต์ในคอร์สต้องใช้ประเภทที่ for_course=True")

@@ -23,4 +23,5 @@ urlpatterns = [
     path("manage_course/edit_course/<int:course_id>/", views.EditCourseView.as_view(), name="course_edit_view"),
     path("administrator/", views.AdminView.as_view(), name="admin_view"),
     path("administrator/courses", views.AdminCourseView.as_view(), name="admin_course_view"),
+    path("administrator/posts", views.AdminPostView.as_view(), name="admin_post_view"),
 ]

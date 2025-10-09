@@ -172,17 +172,6 @@ class StudentPostForm(forms.ModelForm):
         if self.instance and self.instance.pk:
             self.fields['post_type'].disabled = True
 
-    def clean(self):
-        cleaned_data = super().clean()
-        years = cleaned_data.get('years')
-        majors = cleaned_data.get('majors')
-
-        if not years:
-            self.add_error('years', 'กรุณาเลือกชั้นปี')
-        if not majors:
-            self.add_error('majors', 'กรุณาเลือกสาขา')
-
-
 
 class CustomPasswordChangeForm(PasswordChangeForm):
     def __init__(self, *args, **kwargs):

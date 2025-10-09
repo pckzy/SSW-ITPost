@@ -92,14 +92,15 @@ class StudentCreatePostView(LoginRequiredMixin, PermissionRequiredMixin, View):
             return redirect('student_view')
         
         context = get_user_context(request.user)
+        print(form.errors)
         context['form'] = form
         return render(request, 'student_create_post.html', context)
     
 class EditPostView(LoginRequiredMixin, PermissionRequiredMixin, View):
     permission_required = 'posts.change_post'
     def get(self, request, post_id):
-        context = get_user_context(request.user)
-        post = Post.objects.get(pk=post_id, created_by=request.user)
+        context = {}
+        post = Post.objects.get(pk=post_id)
         form = StudentPostForm(instance=post)
 
         context['form'] = form
@@ -107,12 +108,11 @@ class EditPostView(LoginRequiredMixin, PermissionRequiredMixin, View):
         return render(request, 'edit_post.html', context)
 
     def post(self, request, post_id):
-        post = Post.objects.get(pk=post_id, created_by=request.user)
+        post = Post.objects.get(pk=post_id)
         form = StudentPostForm(request.POST, request.FILES, instance=post)
-        form.instance.post_type = post.post_type 
+        form.instance.post_type = post.post_type # ไม่ให้แก้ไขประเภทโพสต์ ไม่มีvalidateไม่ผ่าน
         
         if form.is_valid():
-            print("valid")
             post = form.save(commit=False)
             post.status = 'pending'
             post.save()
@@ -129,10 +129,11 @@ class EditPostView(LoginRequiredMixin, PermissionRequiredMixin, View):
                 post.files.all().delete()
                 for f in request.FILES.getlist('files'):
                     PostFile.objects.create(post=post, file=f)
-
+            if request.user.groups.filter(name="Admin").exists():
+                return redirect('admin_post_view')
             return redirect('student_view')
         print(form.errors)
-        context = get_user_context(request.user)
+        context = {}
         context['form'] = form
         context['post'] = post
         return render(request, 'edit_post.html', context)
@@ -620,3 +621,27 @@ class AdminCourseView(LoginRequiredMixin, PermissionRequiredMixin, View):
 
         context['course_lists'] = courses
         return render(request, 'admin_manage_course.html', context)
+
+class AdminPostView(LoginRequiredMixin, PermissionRequiredMixin, View):
+    permission_required = 'posts.change_group'
+
+    def get(self, request):
+        context = get_all_info_context(request.user)
+
+        search_query = request.GET.get("search", "").strip()
+        filter = request.GET.get('status')
+
+        posts = Post.objects.all().order_by('-created_at')
+
+        if filter:
+            posts = posts.filter(status=filter)
+
+        if search_query:
+            posts = posts.filter(
+                Q(title__icontains=search_query) |
+                Q(content__icontains=search_query) |
+                Q(created_by__username__icontains=search_query)
+            )
+        
+        context['posts'] = posts
+        return render(request, 'admin_manage_post.html', context)

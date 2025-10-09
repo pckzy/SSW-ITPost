@@ -88,7 +88,12 @@
 
                     
         <div class="flex justify-end space-x-4">
-            <a href="{% url 'student_view' %}" class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors">ยกเลิก</a>
+            {% if user|in_group:"Admin" %}
+            <a href="{% url 'admin_post_view' %}" class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors">
+            {% else %}
+            <a href="{% url 'student_view' %}" class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors">
+            {% endif %}
+            ยกเลิก</a>
             <button type="submit" class="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors">ยืนยันการแก้ไข</button>
         </div>
     </form>

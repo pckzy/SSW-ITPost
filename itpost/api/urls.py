@@ -7,4 +7,6 @@ urlpatterns = [
     path("comments/<int:post_id>/", PostCommentView.as_view(), name="post_comment"),
     path("enroll_course/<int:course_id>/", EnrollCourseAPIView.as_view(), name="enroll_course_view"),
     path("delete/<int:post_id>/", DeletePostView.as_view(), name="delete_post"),
+    path('approve/<int:post_id>/', PostApprovalView.as_view(), name='approve_post'),
+    path('reject/<int:post_id>/', PostRejectView.as_view(), name='reject_post'),
 ]

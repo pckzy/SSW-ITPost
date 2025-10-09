@@ -74,7 +74,7 @@ function openCommentModal(postId) {
                     method: "POST",
                     body: formData,
                     headers: {
-                        "X-CSRFToken": csrfToken
+                        "X-CSRFToken": csrfToken,
                     }
                 })
                 .then(res => res.json())
@@ -140,11 +140,14 @@ function cancelDeletePost() {
 function deletePost() {
     if (postToDelete) {
         const postId = postToDelete;
-        const csrf = document.querySelector('input[name="csrfmiddlewaretoken"]');
-        const headers = {};
-        if (csrf) headers['X-CSRFToken'] = csrf.value;
+        const csrf = document.getElementById('csrfToken').value;
 
-        fetch(`/api/delete/${postId}/`, { method: 'POST', headers: headers })
+        fetch(`/api/delete/${postId}/`, { 
+            method: 'POST', 
+            headers: {
+                'X-CSRFToken': csrf,
+                'Content-Type': 'application/json'
+            } })
         .then(r => r.json())
         .then(data => {
             if (data.success) {
@@ -181,16 +184,15 @@ function deletePost() {
 // Like button
 document.addEventListener('click', function (e) {
     var btn = e.target.closest('.like-btn');
-    if (!btn) return;
-    var postId = btn.getAttribute('data-post-id');
-    var csrf = document.querySelector('input[name="csrfmiddlewaretoken"]');
-    var headers = {};
-    console.log(csrf)
-    if (csrf) headers['X-CSRFToken'] = csrf.value;
+    const postId = btn.getAttribute('data-post-id');
+    const csrf = document.getElementById('csrfToken').value;
 
     fetch(`/api/like/${postId}/`, {
         method: 'POST',
-        headers: headers
+        headers: { 
+            'X-CSRFToken': csrf, 
+            'Content-Type': 'application/json' 
+        }
     }).then(r => r.json()).then(data => {
         if (data.success) {
             var countEl = btn.querySelector('.like-count');

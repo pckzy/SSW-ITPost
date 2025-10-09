@@ -114,3 +114,15 @@ class DeletePostView(LoginRequiredMixin, PermissionRequiredMixin, APIView):
         post.delete()
         
         return Response({'success': True})
+    
+class PostApprovalView(LoginRequiredMixin, PermissionRequiredMixin, APIView):
+    permission_required = 'posts.change_post'
+    def post(self, request, post_id):
+        Post.objects.filter(pk=post_id).update(status='approved')
+        return Response({'success': True, 'message': 'Post approved'}, status=status.HTTP_200_OK)
+
+class PostRejectView(LoginRequiredMixin, PermissionRequiredMixin, APIView):
+    permission_required = 'posts.change_post'
+    def post(self, request, post_id):
+        Post.objects.filter(pk=post_id).update(status='rejected')
+        return Response({'success': True, 'message': 'Post approved'}, status=status.HTTP_200_OK)
