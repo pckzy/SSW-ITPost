@@ -31,7 +31,8 @@ function doneTyping() {
   window.location.href = `${currentPath}?${query.toString()}`;
 }
 
-function updatePostStatus(postId, action) {
+function updatePostStatus(btnElement, action) {
+    const postId = btnElement.getAttribute('data-post-id')
     const url = action === 'approve'
         ? `/api/approve/${postId}/`
         : `/api/reject/${postId}/`;
@@ -50,12 +51,29 @@ function updatePostStatus(postId, action) {
         if (data.success){
             const postRow = document.getElementById(`post-${postId}`);
             const countEl = document.getElementById('postRequestCount');
+            const pendingCount = document.getElementById('post-pending-count');
             if (!postRow | !countEl) return;
 
+            const el = document.getElementById(`pending-post-${postId}`);
+                if (el) {
+                    el.style.transition = 'opacity 400ms ease, transform 400ms ease, height 400ms ease, margin 400ms ease, padding 400ms ease';
+                    el.style.opacity = '0';
+                    el.style.transform = 'translateY(-12px)';
+                    el.style.pointerEvents = 'none';
+
+                    el.style.height = el.offsetHeight + 'px';
+
+                    void el.offsetHeight;
+                    el.style.height = '0px';
+                    el.style.marginBottom = '0px';
+                    el.style.paddingTop = '0px';
+                    el.style.paddingBottom = '0px';
+                    setTimeout(function () { el.remove(); }, 450);
+                }
+
             const statusContainer = postRow.querySelector(".post-status");
-            const actionButtons = postRow.querySelector(".action-buttons");
             
-            // เปลี่ยนสถานะตาม action
+            
             if (action === "approve") {
                 statusContainer.innerHTML = `
                     <span class="px-3 py-1 text-xs rounded-full bg-green-100 text-green-800 whitespace-nowrap">
@@ -69,18 +87,19 @@ function updatePostStatus(postId, action) {
                     </span>
                 `;
             }
-            actionButtons.style.display = "none";
 
             
             let count = parseInt(countEl.textContent);
             count = count - 1;
             countEl.textContent = count;
+            pendingCount.textContent = `โพสต์ที่รออนุมัติจำนวน ${count} โพสต์`;
         }
     })
     .catch(err => console.error(err));
 }
 
-function deletePost(postId) {
+function deletePost(btnElement) {
+    const postId = btnElement.getAttribute('data-post-id')
     const csrf = document.getElementById('csrfToken').value;
     fetch(`/api/delete/${postId}/`, {
         method: 'POST',
@@ -122,4 +141,16 @@ function deletePost(postId) {
         }
     })
     .catch(err => console.error(err));
+}
+
+
+function togglePostApprove() {
+    const postApproveDiv = document.getElementById('post-approve-div')
+    if (postApproveDiv.classList.contains('max-h-0')) {
+        postApproveDiv.classList.remove('max-h-0')
+        postApproveDiv.classList.add('max-h-[2000px]')
+    } else {
+        postApproveDiv.classList.add('max-h-0')
+        postApproveDiv.classList.remove('max-h-[2000px]')
+    }
 }
