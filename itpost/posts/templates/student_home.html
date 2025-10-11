@@ -57,7 +57,7 @@
                     <span>คอร์สเรียน</span>
                 </div>
             </a>
-            {% else %}
+            {% elif user|in_group:'Professor' %}
             <a href="{% url 'prof_manage_course_view' %}" class="flex-1 sm:flex-none px-6 py-3 rounded-lg bg-gray-100 text-gray-700 font-medium transition-all hover:bg-gray-200">
                 <div class="flex items-center justify-center space-x-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

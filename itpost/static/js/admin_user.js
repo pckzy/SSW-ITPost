@@ -39,10 +39,11 @@ function toggleCreateUserForm() {
     formDiv.classList.remove('max-h-0')
     formDiv.classList.add('max-h-[1000px]')
     form.style.display = 'block'
+    formDiv.classList.remove('hidden')
   } else {
     formDiv.classList.add('max-h-0')
     formDiv.classList.remove('max-h-[1000px]')
-    form.style.display = 'none'
+    formDiv.classList.add('hidden')
   }
 }
 
