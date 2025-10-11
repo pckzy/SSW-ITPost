@@ -567,6 +567,7 @@ class AdminView(LoginRequiredMixin, PermissionRequiredMixin, View):
     permission_required = 'posts.change_group'
     
     def get(self, request):
+        form = CustomUserCreationForm()
         context = get_all_info_context(request.user)
 
         search_query = request.GET.get("search", "").strip()
@@ -589,6 +590,7 @@ class AdminView(LoginRequiredMixin, PermissionRequiredMixin, View):
 
         all_groups = Group.objects.all()
 
+        context['form'] = form
         context['users'] = users
         context['all_groups'] = all_groups
         return render(request, 'admin_dashboard.html', context)
