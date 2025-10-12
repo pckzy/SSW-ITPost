@@ -38,13 +38,21 @@ class MainView(LoginRequiredMixin, View):
 class StudentView(LoginRequiredMixin, PermissionRequiredMixin, View):
     permission_required = 'posts.view_post'
     def get(self, request):
-        context = get_user_context(request.user)
-        request.session['return_to'] = request.path
         user = request.user
+        context = get_user_context(user)
+        request.session['return_to'] = request.path
         posts = Post.objects.filter(
-            course__isnull=True,
-            status = 'approved'
-            ).order_by('-created_at')
+                course__isnull=True,
+                status = 'approved'
+                ).order_by('-created_at')
+        if user.groups.filter(name="Student").exists():
+            posts = posts.filter(
+                years__year=user.academic_info.year,
+                majors=user.academic_info.major
+            )
+            if user.academic_info.specialization:
+                posts = posts.filter(specializations=user.academic_info.specialization)
+            
 
         filter = request.GET.get('filter')
         if filter:
