@@ -30,7 +30,7 @@
         {% for post in pending_posts %}
         <div id="pending-post-{{ post.id }}" class="rounded-xl p-4 my-3 mx-6 bg-white shadow-lg">
             <div class="flex items-center rounded-lg">
-                <img class="w-16 h-16 rounded-full border-4 border-gray-200 object-cover" src="{% if post.annonymous %} {{ MEDIA_URL }}profile/no-profile.png {% else %} /media/{{ post.created_by.image }} {% endif %}" alt="Profile">
+                <img class="w-16 h-16 rounded-full border-4 border-gray-200 object-cover" src="{% if post.annonymous %} {{ MEDIA_URL }}profile/no-profile.png {% else %} /media/{{ post.created_by.profile.image }} {% endif %}" alt="Profile">
                 <div class="ml-3 flex-1">
                     <div class="">
                         {% if post.annonymous %}
@@ -217,7 +217,7 @@
                             </div>
                         </div>
                         <div class="flex space-x-2">
-                            <button onclick="openModel({{ post.id }})" class="flex-1 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-all text-sm font-medium"><i class="fa-solid fa-trash-can"></i> ลบ</button>
+                            <button data-post-id="{{post.id}}" class="confirmDelete-btn flex-1 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-all text-sm font-medium"><i class="fa-solid fa-trash-can"></i> ลบ</button>
                         </div>
                     </div>
                 {% endfor %}
@@ -272,29 +272,12 @@
                         <td class="px-3 py-4">
                             <!--Option-->
                             <div class="flex items-center space-x-4">
-                                <button onclick="openModel({{post.id}})" class="pl-4 text-red-600 hover:text-red-800 font-medium">
-                                    <i class="fa-solid fa-trash-can"></i>
+                                <button class="pl-4 text-red-600 hover:text-red-800 font-medium">
+                                    <i data-post-id="{{post.id}}" class="confirmDelete-btn fa-solid fa-trash-can"></i>
                                 </button>
                             </div>
                         </td>
                     </tr>
-                    <div id="deleteModel-{{post.id}}"
-                        class="fixed inset-0 backdrop-blur-sm flex items-center justify-center hidden z-50">
-                        <div class="bg-white rounded-xl shadow-lg w-80 p-6 text-center">
-                            <h2 class="text-lg font-semibold text-gray-800 mb-4">ยืนยันการเตะผู้ใช้ออกจากรายวิชา</h2>
-                            <p class="text-gray-600 mb-6">ยืนยันลบโพสต์ <b>{{post.title}}</b> <br>ของ <a class="underline" href="{% url 'profile_view' post.created_by.username %}">{{post.created_by.username}}</a>?</p>
-                            <div class="flex justify-center space-x-3">
-                                <button onclick="deletePost({{post.id}})"
-                                    class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition">
-                                    ยืนยัน
-                                </button>
-                                <button onclick="closeModel({{post.id}})"
-                                    class="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition">
-                                    ยกเลิก
-                                </button>
-                            </div>
-                        </div>
-                    </div>
                     {% endfor %}
                 </tbody>
             </table>
@@ -302,6 +285,38 @@
     </div>
 </div>
 
+<div id="deletePostModal" class="fixed inset-0 z-60 hidden">
+        
+        <div class="modal-overlay absolute inset-0 bg-black opacity-60"></div>
+        
+        
+        <div class="relative z-10 flex items-center justify-center min-h-screen p-4">
+            <div class="modal-content bg-white rounded-2xl shadow-2xl w-full max-w-md">
+                <div class="p-6 text-center">
+                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-exclamation-triangle text-red-500 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-3">ลบโพสต์</h3>
+                    <p class="text-gray-600 text-sm mb-6 leading-relaxed">
+                        คุณแน่ใจหรือไม่ที่จะลบโพสต์นี้? <br>
+                        การดำเนินการนี้จะลบโพสต์และความคิดเห็นทั้งหมดอย่างถาวร <br>
+                        <span class="font-semibold text-red-600">ไม่สามารถกู้คืนได้</span>
+                    </p>
+                    
+                    <div class="flex gap-3">
+                        <button onclick="cancelDeletePost()" 
+                                class="flex-1 px-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors cursor-pointer">
+                            ยกเลิก
+                        </button>
+                        <button onclick="deletePost()" 
+                                class="flex-1 px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition-colors cursor-pointer">
+                            ลบโพสต์
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
 {% endblock %}
 

@@ -1,32 +1,47 @@
-function openModel(enrollId) {
-        document.getElementById(`rejectModel-${enrollId}`).classList.remove("hidden");
-    }
+let enrollToReject = null
+let nameToReject = null
 
-function closeModel(enrollId) {
-        document.getElementById(`rejectModel-${enrollId}`).classList.add("hidden");
+document.addEventListener('click', function (e) {
+    if (e.target.matches('.rejectEnroll-btn')) {
+        const rejectModal = document.getElementById('rejectEnrollModal');
+        enrollToReject = e.target.getAttribute('data-enroll-id')
+        nameToReject = e.target.getAttribute('data-name')
+        console.log(enrollToReject)
+        rejectModal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        document.getElementById('nameToReject').innerText = nameToReject
     }
+});
 
-function rejectEnrollment(enrollId) {
-    console.log(enrollId)
+
+function cancelRejectEnroll() {
+    enrollToReject = null;
+    const rejectModal = document.getElementById('rejectEnrollModal');
+    rejectModal.classList.add('hidden');
+    document.body.style.overflow = 'auto';
+}
+
+
+function rejectEnrollment() {
     const csrf = document.querySelector('input[name="csrfmiddlewaretoken"]');
     const headers = {};
     if (csrf) headers['X-CSRFToken'] = csrf.value;
 
-    fetch(`/api/enroll_course/${enrollId}/`, { method: 'DELETE', headers: headers })
+    fetch(`/api/enroll_course/${enrollToReject}/`, { method: 'DELETE', headers: headers })
         .then(r => r.json())
         .then(data => {
             console.log('API response:', data);
             if (data.success) {
-                const el = document.getElementById(`enroll-${enrollId}`);
+                const el = document.getElementById(`enroll-${enrollToReject}`);
                 if (el) {
-                    // fade out + slide up animation before removing
+                    
                     el.style.transition = 'opacity 400ms ease, transform 400ms ease, height 400ms ease, margin 400ms ease, padding 400ms ease';
                     el.style.opacity = '0';
                     el.style.transform = 'translateY(-12px)';
                     el.style.pointerEvents = 'none';
-                    // also collapse height to avoid gap
+                    
                     el.style.height = el.offsetHeight + 'px';
-                    // trigger reflow then set height to 0
+                    
                     void el.offsetHeight;
                     el.style.height = '0px';
                     el.style.marginBottom = '0px';
@@ -36,7 +51,7 @@ function rejectEnrollment(enrollId) {
                 }
                 const std_count = document.getElementById('std-count')
                 std_count.innerText = Number(std_count.innerText) - 1
-                closeModel(enrollId);
+                cancelRejectEnroll();
             } else {
                 alert('Approve failed: ' + (data.error || 'unknown'));
             }

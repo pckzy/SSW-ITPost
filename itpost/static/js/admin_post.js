@@ -99,17 +99,31 @@ function updatePostStatus(btnElement, action) {
 }
 
 
-function openModel(postId) {
-        document.getElementById(`deleteModel-${postId}`).classList.remove("hidden");
-    }
+let postToDelete = null
 
-function closeModel(postId) {
-        document.getElementById(`deleteModel-${postId}`).classList.add("hidden");
-    }
+document.addEventListener('click', function (e) {
 
-function deletePost(postId) {
+    if (e.target.matches('.confirmDelete-btn')) {
+        const deleteModal = document.getElementById('deletePostModal');
+        postToDelete = e.target.getAttribute('data-post-id')
+        console.log(postToDelete)
+        deleteModal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+});
+
+
+function cancelDeletePost() {
+    postToDelete = null;
+    const deleteModal = document.getElementById('deletePostModal');
+    deleteModal.classList.add('hidden');
+    document.body.style.overflow = 'auto';
+}
+
+
+function deletePost() {
     const csrf = document.getElementById('csrfToken').value;
-    fetch(`/api/delete/${postId}/`, {
+    fetch(`/api/delete/${postToDelete}/`, {
         method: 'POST',
         headers: {
             'X-CSRFToken': csrf,
@@ -119,7 +133,7 @@ function deletePost(postId) {
     .then(res => res.json())
     .then(data => {
         if (data.success) {
-            const postRow = document.getElementById(`post-${postId}`);
+            const postRow = document.getElementById(`post-${postToDelete}`);
             const countEl = document.getElementById('allPostCount');
             if (!postRow | !countEl) return;
 
@@ -129,16 +143,14 @@ function deletePost(postId) {
             postRow.style.height = rowHeight + 'px';
             postRow.style.opacity = '1';
 
-            // trigger reflow (บังคับ browser register style ก่อนเปลี่ยน)
             postRow.offsetHeight;
 
-            // เริ่ม animation
             postRow.style.opacity = '0';
             postRow.style.height = '0';
             postRow.style.paddingTop = '0';
             postRow.style.paddingBottom = '0';
 
-            // ลบ element หลัง animation เสร็จ
+            
             postRow.addEventListener('transitionend', () => {
                 postRow.remove();
             }, { once: true });
@@ -146,7 +158,7 @@ function deletePost(postId) {
             let count = parseInt(countEl.textContent);
             count = count - 1;
             countEl.textContent = count;
-            closeModel(postId);
+            cancelDeletePost();
         }
     })
     .catch(err => console.error(err));
