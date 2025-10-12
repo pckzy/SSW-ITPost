@@ -47,7 +47,7 @@ class StudentView(LoginRequiredMixin, PermissionRequiredMixin, View):
                 ).order_by('-created_at')
         if user.groups.filter(name="Student").exists():
             posts = posts.filter(
-                years__year=user.academic_info.year,
+                years=user.academic_info.year,
                 majors=user.academic_info.major
             )
             if user.academic_info.specialization:
@@ -134,28 +134,24 @@ class EditPostView(LoginRequiredMixin, PermissionRequiredMixin, View):
         
         if form.is_valid():
             post = form.save(commit=False)
-            if user.groups.filter(name="Student").exists():
+            if request.user.groups.filter(name="Student").exists():
                 post.status = 'pending'
             post.save()
             form.save_m2m()
+          
+            if request.FILES.getlist('files'):
+                post.files.all().delete()
+                for f in request.FILES.getlist('files'):
+                    PostFile.objects.create(post=post, file=f)
 
-            if not post.post_type.for_course:
-                if post.years.count() == 0:
-                    form.add_error('years', 'กรุณาเลือกชั้นปี')
-                    return render(request, 'edit_post.html', {'form': form, 'post': post})
-                if post.majors.count() == 0:
-                    form.add_error('majors', 'กรุณาเลือกสาขา')
-                    return render(request, 'edit_post.html', {'form': form, 'post': post})
-
-                if request.FILES.getlist('files'):
-                    post.files.all().delete()
-                    for f in request.FILES.getlist('files'):
-                        PostFile.objects.create(post=post, file=f)
-                if request.user.groups.filter(name="Admin").exists():
-                    return redirect('admin_post_view')
-                return redirect('student_view')
-            else:
+            if request.user.groups.filter(name="Admin").exists():
+                return redirect('admin_post_view')
+            elif request.user.groups.filter(name="Professor").exists():
                 return redirect('course_detail', post.course.course_code)
+            elif request.user.groups.filter(name="Student").exists():
+                
+                return redirect('student_view')
+        
         print(form.errors)
         context = {}
         context['form'] = form

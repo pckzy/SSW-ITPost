@@ -150,7 +150,6 @@ class ProfessorPostForm(forms.ModelForm):
             self.fields['course'].queryset = Course.objects.filter(created_by=user)
         
         if is_edit:
-            # ทำให้ post_type และ course ไม่สามารถแก้ไขได้
             self.fields['post_type'].disabled = True
             self.fields['course'].disabled = True
 
@@ -171,6 +170,7 @@ class StudentPostForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        self.is_edit = kwargs.pop('is_edit', False)
         super().__init__(*args, **kwargs)
 
         self.fields['post_type'].empty_label = "-- เลือกชนิดของประกาศ --"
@@ -178,6 +178,22 @@ class StudentPostForm(forms.ModelForm):
         if self.instance and self.instance.pk:
             self.fields['post_type'].disabled = True
 
+        if self.is_edit:
+            self.fields['post_type'].disabled = True
+
+    def clean(self):
+        cleaned_data = super().clean()
+        years = cleaned_data.get('years')
+        majors = cleaned_data.get('majors')
+
+        if self.is_edit:
+            if not years or years.count() == 0:
+                self.add_error('years', 'กรุณาเลือกชั้นปี')
+
+            if not majors or majors.count() == 0:
+                self.add_error('majors', 'กรุณาเลือกสาขา')
+
+        return cleaned_data
 
 class CustomPasswordChangeForm(PasswordChangeForm):
     def __init__(self, *args, **kwargs):
