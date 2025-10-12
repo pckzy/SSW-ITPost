@@ -29,7 +29,7 @@
                         <option value="{{ group.id }}" {% if group.id|stringformat:"s" == request.GET.group %}selected{% endif %}>{{ group.name }}</option>
                     {% endfor %}
                 </select>
-                <button
+                <button onclick="toggleCreateUserForm()"
                     class="px-6 py-3 bg-gradient-to-r from-slate-800 to-gray-800 text-white rounded-lg hover:from-slate-900 hover:to-gray-900 transition-all font-medium flex items-center space-x-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -38,12 +38,78 @@
                 </button>
             </div>
         </div>
+
+        <div class="duration-500 max-h-[1000px] hidden" id="createuser-form">
+                
+                <form id="createuser-forms" class="bg-white space-y-6 p-2 md:p-8">
+                    {% csrf_token %}
+                    <div class="">
+                        <label class="block text-md font-medium text-gray-700 mb-2">เลือกชนิดของบัญชี <span class="text-red-500">*</span></label>
+                        <select name="group" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                            <option value="">-- เลือกชนิดบัญชี --</option>
+                            <option value="Admin">Admin</option>
+                            <option value="Professor">Professor</option>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-md font-medium text-gray-700 mb-2">ชื่อจริง <span class="text-red-500">*</span></label>
+                            <input name="first_name" type="text" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="กรอกชื่อจริง">
+                            <span id="error-course_code" class="text-red-600 text-sm"></span>
+                        </div>
+                        <div>
+                            <label class="block text-md font-medium text-gray-700 mb-2">นามสกุล <span class="text-red-500">*</span></label>
+                            <input name="last_name" type="text" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="กรอกนามสกุล">
+                        </div>
+                    </div>
+                    
+
+                    <div class="">
+                        <label class="block text-md font-medium text-gray-700 mb-2">ชื่อผู้ใช้ <span class="text-red-500">*</span></label>
+                        <input name="username" type="text" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="กรอกชื่อผู้ใช้">
+                        <span id="error-username" class="text-red-600 text-sm"></span>
+                    </div>
+
+                    <div class="">
+                        <label class="block text-md font-medium text-gray-700 mb-2">อีเมล <span class="text-red-500">*</span></label>
+                        <input name="email" type="text" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="กรอกอีเมล">
+                        <span id="error-email" class="text-red-600 text-sm"></span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-md font-medium text-gray-700 mb-2">รหัสผ่าน <span class="text-red-500">*</span></label>
+                            <input name="password1" type="password" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="กรอกรหัสผ่าน">
+                            <span id="error-password" class="text-red-600 text-sm"></span>
+                        </div>
+                        <div>
+                            <label class="block text-md font-medium text-gray-700 mb-2">ยืนยันรหัสผ่าน <span class="text-red-500">*</span></label>
+                            <input name="password2" type="password" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="ยืนยันรหัสผ่าน">
+                        </div>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-3 pt-4">
+                        <button type="submit" class="flex-1 bg-blue-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-600 transition-all">
+                            สร้างบัญชี
+                        </button>
+                        <button type="button" onclick="toggleCreateUserForm()" class="flex-1 sm:flex-none bg-gray-100 text-gray-700 px-6 py-3 rounded-lg font-medium hover:bg-gray-200 transition-all">
+                            ยกเลิก
+                        </button>
+                    </div>
+                </form>
+            </div>
     </div>
 
 
     <div class="bg-white rounded-xl shadow-lg overflow-hidden">
         <div class="block md:hidden">
-            <div class="divide-y divide-gray-200">
+            <div class="divide-y divide-gray-200" id="userList">
 
                 {% for u in users %}
                     <div class="p-4 hover:bg-gray-50">
@@ -73,12 +139,10 @@
                                 {% endif %}
                             </div>
                         </div>
-                        {% if not enroll.is_approved %}
                         <div class="flex space-x-2">
                             <a href="{% url 'edit_profile_view' u.username %}" class="flex-1 px-4 py-2 bg-yellow-100 text-yellow-700 text-center rounded-lg hover:bg-yellow-200 transition-all text-sm font-medium"><i class="fa-regular fa-pen-to-square text-yellow-500"></i> แก้ไข</a>
                             <button class="flex-1 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-all text-sm font-medium"><i class="fa-solid fa-trash-can"></i> ลบ</button>
                         </div>
-                        {% endif %}
                     </div>
                 {% endfor %}
 
@@ -90,18 +154,17 @@
             <table class="w-full">
                 <thead class="bg-gray-100 border-b">
                     <tr>
-                        <th class="px-3 py-4 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">ผู้ใช้</th>
+                        <th class="pl-7 px-3 py-4 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">ผู้ใช้</th>
                         <th class="px-1 py-4 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">อีเมล</th>
                         <th class="px-3 py-4 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">ข้อมูลการศึกษา</th>
                         <th class="px-1 py-4 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">บทบาท</th>
-                        <th class="px-3 py-4 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">การกระทำ
-                        </th>
+                        <th class="px-3 py-4 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">ตัวเลือก</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-200">
+                <tbody class="divide-y divide-gray-200" id="userTable">
                     {% for u in users %}
                     <tr class="hover:bg-gray-50">
-                        <td class="px-3 py-4">
+                        <td class="pl-5 px-3 py-4">
                             <a href="{% url 'profile_view' u.username %}">
                                 <div class="flex items-center space-x-3">
                                     <img src="/media/{{ u.profile.image }}" class="w-10 h-10 rounded-full border border-gray-300" alt="">

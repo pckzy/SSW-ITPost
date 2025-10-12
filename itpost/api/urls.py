@@ -9,4 +9,5 @@ urlpatterns = [
     path("delete/<int:post_id>/", DeletePostView.as_view(), name="delete_post"),
     path('approve/<int:post_id>/', PostApprovalView.as_view(), name='approve_post'),
     path('reject/<int:post_id>/', PostRejectView.as_view(), name='reject_post'),
+    path('user/', UserCreateView.as_view(), name='create_user'),
 ]

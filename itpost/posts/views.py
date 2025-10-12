@@ -264,7 +264,7 @@ class EditCourseView(LoginRequiredMixin, PermissionRequiredMixin, View):
         if course.created_by == user or user.is_staff:
             if course_form.is_valid():
                 course_form.save()
-                return redirect('manage_course_view')
+                return redirect('back')
             
             context['course_form'] = course_form
             context['course_id'] = course_id
@@ -564,9 +564,10 @@ def get_all_info_context(user):
 
 
 class AdminView(LoginRequiredMixin, PermissionRequiredMixin, View):
-    permission_required = 'posts.change_group'
+    permission_required = 'auth.add_user'
     
     def get(self, request):
+        form = CustomUserCreationForm()
         context = get_all_info_context(request.user)
 
         search_query = request.GET.get("search", "").strip()
@@ -589,6 +590,7 @@ class AdminView(LoginRequiredMixin, PermissionRequiredMixin, View):
 
         all_groups = Group.objects.all()
 
+        context['form'] = form
         context['users'] = users
         context['all_groups'] = all_groups
         return render(request, 'admin_dashboard.html', context)
@@ -628,6 +630,12 @@ class AdminPostView(LoginRequiredMixin, PermissionRequiredMixin, View):
     def get(self, request):
         context = get_all_info_context(request.user)
 
+        pending_posts_list = Post.objects.prefetch_related('files').filter(status='pending').order_by('-created_at')
+
+        paginator = Paginator(pending_posts_list, 2)
+        page_number = request.GET.get('page')
+        pending_posts = paginator.get_page(page_number)
+
         search_query = request.GET.get("search", "").strip()
         filter = request.GET.get('status')
 
@@ -644,4 +652,5 @@ class AdminPostView(LoginRequiredMixin, PermissionRequiredMixin, View):
             )
         
         context['posts'] = posts
+        context['pending_posts'] = pending_posts
         return render(request, 'admin_manage_post.html', context)

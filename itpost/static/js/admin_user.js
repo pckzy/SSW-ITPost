@@ -30,3 +30,134 @@ function doneTyping() {
 
   window.location.href = `${currentPath}?${query.toString()}`;
 }
+
+
+function toggleCreateUserForm() {
+  const formDiv = document.getElementById('createuser-form')
+  const form = document.getElementById('createuser-forms')
+  if (formDiv.classList.contains('max-h-0')) {
+    formDiv.classList.remove('max-h-0')
+    formDiv.classList.add('max-h-[1000px]')
+    form.style.display = 'block'
+    formDiv.classList.remove('hidden')
+  } else {
+    formDiv.classList.add('max-h-0')
+    formDiv.classList.remove('max-h-[1000px]')
+    formDiv.classList.add('hidden')
+  }
+}
+
+
+document.getElementById('createuser-forms').addEventListener('submit', function (e) {
+  e.preventDefault();
+
+  const form = this;
+  const formData = new FormData(form);
+  const data = Object.fromEntries(formData.entries());
+
+  fetch('/api/user/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+    },
+    body: JSON.stringify(data)
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        toggleCreateUserForm()
+        const u = data.user;
+        const userCount = document.getElementById('userCount');
+        userCount.innerText = u.count
+        const newUser = document.createElement('tr');
+        newUser.className = 'hover:bg-gray-50';
+        newUser.innerHTML = `
+                        <td class="pl-5 px-3 py-4">
+                            <a href="/profile/${u.username}/">
+                                <div class="flex items-center space-x-3">
+                                    <img src="/media/profile/no-profile.png" class="w-10 h-10 rounded-full border border-gray-300" alt="">
+                                    <div>
+                                        <div class="font-medium text-gray-900">${u.first_name} ${u.last_name}</div>
+                                        <div class="text-sm text-gray-500">@${u.username}</div>
+                                    </div>
+                                </div>
+                            </a>
+                        </td>
+                        <td class="px-1 py-4 text-sm text-gray-600">${u.email}</td>
+                        
+                        <td class="px-3 py-4 text-sm text-gray-600">-</td>
+                        
+                        <td class="px-1 py-4">
+                            ${u.group === 'Professor' ?
+                              `<span class="px-3 py-1 text-xs rounded-full bg-purple-100 text-purple-800 whitespace-nowrap">อาจารย์</span>`
+                              : `<span class="px-3 py-1 text-xs rounded-full bg-red-100 text-red-800 whitespace-nowrap">ผู้ดูแล</span>`
+                            }
+                        </td>
+                        <td class="px-3 py-4">
+                            <div class="flex items-center space-x-4">
+                                <a href="/profile/edit/${u.username}/" class="text-slate-600 hover:text-slate-800 font-medium">
+                                    <i class="fa-regular fa-pen-to-square text-yellow-500"></i>
+                                </a>
+                                <button class="text-red-600 hover:text-red-800 font-medium">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </div>
+                        </td>
+            `;
+        const newUserDiv = document.createElement('div');
+        newUserDiv.className = 'p-4 hover:bg-gray-50';
+        newUserDiv.innerHTML = `
+                            <div class="flex items-start justify-between mb-3">
+                              <div class="flex-1">
+                                  <a href="/profile/${u.username}/">
+                                  <div class="flex items-center space-x-3">
+                                      <img src="/media/profile/no-profile.png" class="w-10 h-10 rounded-full border border-gray-300" alt="">
+                                      <div>
+                                          <div class="font-medium text-gray-900">${u.first_name} ${u.last_name}</div>
+                                          <div class="text-sm text-gray-500">@${u.username}</div>
+                                      </div>
+                                  </div>
+                              </a>
+                              </div>
+                              <div class="flex flex-col items-end space-y-2">
+                                  ${u.group === 'Professor' ? 
+                                    `<span class="px-3 py-1 text-xs rounded-full bg-purple-100 text-purple-800">${u.group}</span>`
+                                    : `<span class="px-3 py-1 text-xs rounded-full bg-red-100 text-red-800">${u.group}</span>`
+                                  }
+                              </div>
+                          </div>
+                          <div class="flex space-x-2">
+                              <a href="/profile/edit/${u.username}/" class="flex-1 px-4 py-2 bg-yellow-100 text-yellow-700 text-center rounded-lg hover:bg-yellow-200 transition-all text-sm font-medium"><i class="fa-regular fa-pen-to-square text-yellow-500"></i> แก้ไข</a>
+                              <button class="flex-1 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-all text-sm font-medium"><i class="fa-solid fa-trash-can"></i> ลบ</button>
+                          </div>
+        `
+        const container = document.getElementById('userTable');
+        container.prepend(newUser);
+
+        const containerList = document.getElementById('userList');
+        containerList.prepend(newUserDiv);
+        
+        form.reset();
+        document.getElementById('error-username').textContent = ''
+        document.getElementById('error-email').textContent = ''
+        document.getElementById('error-password').textContent = ''
+      } else {
+        if (data.errors.username) {
+          document.getElementById('error-username').textContent = data.errors.username;
+        } else {
+          document.getElementById('error-username').textContent = ''
+        }
+        if (data.errors.email) {
+          document.getElementById('error-email').textContent = data.errors.email[0];
+        } else {
+          document.getElementById('error-email').textContent = ''
+        }
+        if (data.errors.password) {
+          document.getElementById('error-password').textContent = data.errors.password[0];
+        } else {
+          document.getElementById('error-password').textContent = ''
+        }
+      }
+    });
+});

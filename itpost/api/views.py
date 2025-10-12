@@ -4,7 +4,7 @@ from rest_framework.decorators import api_view
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import CourseSerializer, CommentSerializer, EnrollmentSerializer
+from .serializers import CourseSerializer, CommentSerializer, EnrollmentSerializer, UserCreateSerializer
 
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.shortcuts import get_object_or_404
@@ -136,3 +136,26 @@ class PostRejectView(LoginRequiredMixin, PermissionRequiredMixin, APIView):
     def post(self, request, post_id):
         Post.objects.filter(pk=post_id).update(status='rejected')
         return Response({'success': True, 'message': 'Post approved'}, status=status.HTTP_200_OK)
+    
+
+class UserCreateView(LoginRequiredMixin, PermissionRequiredMixin, APIView):
+    permission_required = 'auth.add_user'
+    def post(self, request):
+        serializer = UserCreateSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            group_name = user.groups.first().name
+
+            return Response({
+                'success': True,
+                'user': {
+                    'username': user.username,
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
+                    'email': user.email,
+                    'group': group_name,
+                    'count': User.objects.all().count(),
+                }
+            }, status=status.HTTP_201_CREATED)
+
+        return Response({'success': False, 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)

@@ -61,6 +61,9 @@ class Course(models.Model):
     
     def student_count(self):
         return self.enrollments.filter(is_approved=True).count()
+    
+    def student_pending_count(self):
+        return self.enrollments.filter(is_approved=False).count()
 
     def post_count(self):
         return self.posts.filter(status='approved').count()
