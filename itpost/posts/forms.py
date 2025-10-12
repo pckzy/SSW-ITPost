@@ -138,6 +138,7 @@ class ProfessorPostForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
+        is_edit = kwargs.pop('is_edit', False)
         super().__init__(*args, **kwargs)
 
         self.fields['course'].required = True
@@ -147,6 +148,11 @@ class ProfessorPostForm(forms.ModelForm):
 
         if user:
             self.fields['course'].queryset = Course.objects.filter(created_by=user)
+        
+        if is_edit:
+            # ทำให้ post_type และ course ไม่สามารถแก้ไขได้
+            self.fields['post_type'].disabled = True
+            self.fields['course'].disabled = True
 
 
 class StudentPostForm(forms.ModelForm):

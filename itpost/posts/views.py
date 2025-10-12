@@ -43,6 +43,7 @@ class StudentView(LoginRequiredMixin, PermissionRequiredMixin, View):
         user = request.user
         posts = Post.objects.filter(
             course__isnull=True,
+            status = 'approved'
             ).order_by('-created_at')
 
         filter = request.GET.get('filter')
@@ -68,11 +69,14 @@ class StudentCreatePostView(LoginRequiredMixin, PermissionRequiredMixin, View):
     
     def post(self, request):
         form = StudentPostForm(request.POST, request.FILES)
+        user = request.user
         
         if form.is_valid():
+            
             post = form.save(commit=False)
             post.created_by = request.user
-            post.status = 'pending'
+            if user.groups.filter(name="Professor").exists():
+                post.status = 'approved'
             post.save()
             form.save_m2m()
 
@@ -91,7 +95,7 @@ class StudentCreatePostView(LoginRequiredMixin, PermissionRequiredMixin, View):
 
             return redirect('student_view')
         
-        context = get_user_context(request.user)
+        context = get_user_context(user)
         print(form.errors)
         context['form'] = form
         return render(request, 'student_create_post.html', context)
@@ -99,9 +103,14 @@ class StudentCreatePostView(LoginRequiredMixin, PermissionRequiredMixin, View):
 class EditPostView(LoginRequiredMixin, PermissionRequiredMixin, View):
     permission_required = 'posts.change_post'
     def get(self, request, post_id):
-        context = {}
+        user = request.user
+        context = get_user_context(user)
         post = Post.objects.get(pk=post_id)
-        form = StudentPostForm(instance=post)
+        
+        if user.groups.filter(name="Professor").exists():
+            form = ProfessorPostForm(instance=post)
+        elif user.groups.filter(name="Student").exists():
+            form = StudentPostForm(instance=post)
 
         context['form'] = form
         context['post'] = post
@@ -109,29 +118,36 @@ class EditPostView(LoginRequiredMixin, PermissionRequiredMixin, View):
 
     def post(self, request, post_id):
         post = Post.objects.get(pk=post_id)
-        form = StudentPostForm(request.POST, request.FILES, instance=post)
-        form.instance.post_type = post.post_type # ไม่ให้แก้ไขประเภทโพสต์ ไม่มีvalidateไม่ผ่าน
+        user = request.user
+        if user.groups.filter(name="Professor").exists():
+            form = ProfessorPostForm(request.POST, request.FILES, instance=post, is_edit=True)
+        elif user.groups.filter(name="Student").exists():
+            form = StudentPostForm(request.POST, request.FILES, instance=post, is_edit=True)
         
         if form.is_valid():
             post = form.save(commit=False)
-            post.status = 'pending'
+            if user.groups.filter(name="Student").exists():
+                post.status = 'pending'
             post.save()
             form.save_m2m()
 
-            if post.years.count() == 0 :
-                form.add_error('years', 'กรุณาเลือกชั้นปี')
-                return render(request, 'edit_post.html', {'form': form, 'post': post})
-            if post.majors.count() == 0:
-                form.add_error('majors', 'กรุณาเลือกสาขา')
-                return render(request, 'edit_post.html', {'form': form, 'post': post})
+            if not post.post_type.for_course:
+                if post.years.count() == 0:
+                    form.add_error('years', 'กรุณาเลือกชั้นปี')
+                    return render(request, 'edit_post.html', {'form': form, 'post': post})
+                if post.majors.count() == 0:
+                    form.add_error('majors', 'กรุณาเลือกสาขา')
+                    return render(request, 'edit_post.html', {'form': form, 'post': post})
 
-            if request.FILES.getlist('files'):
-                post.files.all().delete()
-                for f in request.FILES.getlist('files'):
-                    PostFile.objects.create(post=post, file=f)
-            if request.user.groups.filter(name="Admin").exists():
-                return redirect('admin_post_view')
-            return redirect('student_view')
+                if request.FILES.getlist('files'):
+                    post.files.all().delete()
+                    for f in request.FILES.getlist('files'):
+                        PostFile.objects.create(post=post, file=f)
+                if request.user.groups.filter(name="Admin").exists():
+                    return redirect('admin_post_view')
+                return redirect('student_view')
+            else:
+                return redirect('course_detail', post.course.course_code)
         print(form.errors)
         context = {}
         context['form'] = form

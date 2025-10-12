@@ -109,7 +109,7 @@
             {% for post in posts %}
             <div id="post-{{ post.id }}" class="rounded-xl p-4 mb-6 bg-white shadow-lg">
                 <div class="flex items-center rounded-lg select-none">
-                    <img class="w-16 h-16 rounded-full border-4 border-gray-200 object-cover" src="{% if post.annonymous %} /media/profile/no-profile.png {% else %} /media/{{ post.created_by.profile.image }} {% endif %}" alt="Profile">
+                    <img class="w-16 h-16 rounded-full border-4 border-gray-200 object-cover" src="{% if post.annonymous %} /media/profile/no-profile.png {% else %} /media/{{ post.created_by.profile.image }} {% endif %}" alt="{% if post.annonymous %}Profile{% else %}{{post.created_by.first_name}} Profile{% endif %}">
                     <div class="ml-3 flex-1">
                         <div class="">
                             {% if post.annonymous %}
@@ -157,7 +157,7 @@
                             <span class="px-1 text-gray-400">|</span>
                             <span class="text-gray-500 text-xs">{{ post.last_updated|time_since }}</span>
                             {% if post.created_at|date:"d M Y H:i:s" != post.last_updated|date:"d M Y H:i:s" %}
-                                <span class="text-gray-400"> (แก้ไขล่าสุด)</span>
+                                <span class="text-gray-400 text-xs"> (แก้ไขล่าสุด)</span>
                             {% endif %}
                         </div>
                     </div>
