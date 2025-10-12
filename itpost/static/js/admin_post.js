@@ -98,8 +98,16 @@ function updatePostStatus(btnElement, action) {
     .catch(err => console.error(err));
 }
 
-function deletePost(btnElement) {
-    const postId = btnElement.getAttribute('data-post-id')
+
+function openModel(postId) {
+        document.getElementById(`deleteModel-${postId}`).classList.remove("hidden");
+    }
+
+function closeModel(postId) {
+        document.getElementById(`deleteModel-${postId}`).classList.add("hidden");
+    }
+
+function deletePost(postId) {
     const csrf = document.getElementById('csrfToken').value;
     fetch(`/api/delete/${postId}/`, {
         method: 'POST',
@@ -138,6 +146,7 @@ function deletePost(btnElement) {
             let count = parseInt(countEl.textContent);
             count = count - 1;
             countEl.textContent = count;
+            closeModel(postId);
         }
     })
     .catch(err => console.error(err));
