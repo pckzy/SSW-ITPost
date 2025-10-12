@@ -106,6 +106,16 @@ class EnrollCourseAPIView(APIView):
 
         return Response({'success': True, 'message': 'Enrollment approve sent'}, status=status.HTTP_200_OK)
     
+    def delete(self, request, course_id):
+        try:
+            enrollments = Enrollment.objects.get(pk=course_id)
+        except Enrollment.DoesNotExist:
+            return Response({'error': 'Enrollment not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        enrollments.delete()
+
+        return Response({'success': True, 'message': 'Delete Enrollment'}, status=status.HTTP_200_OK)
+    
 
 class DeletePostView(LoginRequiredMixin, PermissionRequiredMixin, APIView):
     permission_required = 'posts.delete_post'
