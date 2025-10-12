@@ -70,6 +70,11 @@ class UserCreateSerializer(serializers.ModelSerializer):
             last_name=validated_data.get('last_name')
         )
         user.set_password(validated_data['password1'])
+
+        if group_name == 'Admin':
+            user.is_staff = True
+            user.is_superuser = True
+
         user.save()
 
         group = Group.objects.get(name=group_name)

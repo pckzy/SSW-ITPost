@@ -564,7 +564,7 @@ def get_all_info_context(user):
 
 
 class AdminView(LoginRequiredMixin, PermissionRequiredMixin, View):
-    permission_required = 'posts.change_group'
+    permission_required = 'auth.add_user'
     
     def get(self, request):
         form = CustomUserCreationForm()

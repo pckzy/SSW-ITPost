@@ -129,7 +129,7 @@ class PostRejectView(LoginRequiredMixin, PermissionRequiredMixin, APIView):
     
 
 class UserCreateView(LoginRequiredMixin, PermissionRequiredMixin, APIView):
-    permission_required = 'posts.add_user'
+    permission_required = 'auth.add_user'
     def post(self, request):
         serializer = UserCreateSerializer(data=request.data)
         if serializer.is_valid():

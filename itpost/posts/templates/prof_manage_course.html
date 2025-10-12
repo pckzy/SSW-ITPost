@@ -123,8 +123,16 @@
                 {% for ac in course_lists %}
                 <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all overflow-hidden border-t-4 border-{{ac.color}}-500">
                     <div class="p-6">
-                        <div class="mb-3">
+                        <div class="mb-3 flex justify-between">
                             <span class="bg-{{ac.color}}-100 text-{{ac.color}}-700 text-xs font-bold px-3 py-1 rounded-full">{{ ac.course_code }}</span>
+                            {% if ac.student_pending_count %}
+                            <div class="relative inline-block">
+                                <a href="{% url 'course_detail_student' ac.course_code %}"><i class="fa-regular fa-bell text-gray-700 text-xl"></i></a>
+                                <span class="absolute -top-2 -right-3 bg-red-600 text-white text-xs font-semibold rounded-full px-1.5 py-0.5">
+                                    {{ ac.student_pending_count }}
+                                </span>
+                            </div>
+                            {% endif %}
                         </div>
                         <h3 class="text-lg font-semibold text-gray-800 mb-2">{{ ac.course_name }}</h3>
                         <p class="text-gray-600 text-sm mb-4">{{ ac.description }}</p>
@@ -161,7 +169,7 @@
                 {% endfor %}
             </div>
         </div>
-        {% if enrolled_courses.count == 0 %}
+        {% if course_lists.count == 0 %}
         <div class="text-center py-8">
             <p class="text-gray-500 text-lg">ยังไม่มีคอร์สที่สร้างไว้</p>
         </div>
