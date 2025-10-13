@@ -159,3 +159,10 @@ class UserCreateView(LoginRequiredMixin, PermissionRequiredMixin, APIView):
             }, status=status.HTTP_201_CREATED)
 
         return Response({'success': False, 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+class UserDeleteView(LoginRequiredMixin, PermissionRequiredMixin, APIView):
+    permission_required = 'auth.delete_user'
+    def post(self, request, username):
+        user = User.objects.get(username=username)
+        user.delete()
+        return Response({{'success': True}})

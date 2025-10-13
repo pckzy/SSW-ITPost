@@ -115,9 +115,9 @@ class EditPostView(LoginRequiredMixin, PermissionRequiredMixin, View):
         context = get_user_context(user)
         post = Post.objects.get(pk=post_id)
         
-        if user.groups.filter(name="Professor").exists():
+        if post.course:
             form = ProfessorPostForm(instance=post)
-        elif user.groups.filter(name="Student").exists():
+        else:
             form = StudentPostForm(instance=post)
 
         context['form'] = form
@@ -126,10 +126,9 @@ class EditPostView(LoginRequiredMixin, PermissionRequiredMixin, View):
 
     def post(self, request, post_id):
         post = Post.objects.get(pk=post_id)
-        user = request.user
-        if user.groups.filter(name="Professor").exists():
+        if post.course:
             form = ProfessorPostForm(request.POST, request.FILES, instance=post, is_edit=True)
-        elif user.groups.filter(name="Student").exists():
+        else:
             form = StudentPostForm(request.POST, request.FILES, instance=post, is_edit=True)
         
         if form.is_valid():
@@ -146,10 +145,9 @@ class EditPostView(LoginRequiredMixin, PermissionRequiredMixin, View):
 
             if request.user.groups.filter(name="Admin").exists():
                 return redirect('admin_post_view')
-            elif request.user.groups.filter(name="Professor").exists():
+            elif post.course:
                 return redirect('course_detail', post.course.course_code)
-            elif request.user.groups.filter(name="Student").exists():
-                
+            else:
                 return redirect('student_view')
         
         print(form.errors)
