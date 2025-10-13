@@ -164,10 +164,10 @@ class UserCreateView(LoginRequiredMixin, PermissionRequiredMixin, APIView):
 
 class DeleteUserView(LoginRequiredMixin, PermissionRequiredMixin, APIView):
     permission_required = 'auth.delete_user'
-    def post(self, request, user_id):
+    def delete(self, request, user_id):
         try:
             user = User.objects.get(pk=user_id)
         except User.DoesNotExist:
             return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
         user.delete()
-        return Response({'success': True, 'message': 'Delete User'}, status=status.HTTP_204_NO_CONTENT)
+        return Response({'success': True, 'message': 'Delete User'}, status=status.HTTP_200_OK)

@@ -194,7 +194,7 @@ function cancelDeleteUser() {
 function deleteUser() {
   const csrf = document.getElementById('csrfToken').value;
   fetch(`/api/user/delete/${userToDelete}/`, {
-      method: 'POST',
+      method: 'DELETE',
       headers: {
         'X-CSRFToken': csrf,
         'Content-Type': 'application/json'
