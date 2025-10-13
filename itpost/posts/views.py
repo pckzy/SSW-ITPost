@@ -45,14 +45,23 @@ class StudentView(LoginRequiredMixin, PermissionRequiredMixin, View):
                 course__isnull=True,
                 status = 'approved'
                 ).order_by('-created_at')
+        
         if user.groups.filter(name="Student").exists():
+            info = user.academic_info
+
+            visibility_filter = Q(years=info.year) & Q(majors=info.major)
+
+            if info.specialization:
+                visibility_filter &= (
+                    Q(specializations=info.specialization) |
+                    Q(specializations__isnull=True)
+                )
+            else:
+                visibility_filter &= Q(specializations__isnull=True)
+
             posts = posts.filter(
-                years=user.academic_info.year,
-                majors=user.academic_info.major
-            )
-            if user.academic_info.specialization:
-                posts = posts.filter(specializations=user.academic_info.specialization)
-            
+                visibility_filter | Q(created_by=user)
+            ).distinct().order_by('-created_at')
 
         filter = request.GET.get('filter')
         if filter:
@@ -94,9 +103,6 @@ class StudentCreatePostView(LoginRequiredMixin, PermissionRequiredMixin, View):
             if post.majors.count() == 0:
                 for i in Major.objects.all():
                     post.majors.add(i)
-            if post.specializations.count() == 0:
-                for i in Specialization.objects.all():
-                    post.specializations.add(i)
 
             for f in request.FILES.getlist('files'):
                 PostFile.objects.create(post=post, file=f)
@@ -459,13 +465,22 @@ class ProfileView(LoginRequiredMixin, View):
                 created_by=users
             ).order_by('-created_at')
 
-            if user.groups.filter(name="Student").exists():
+            if user.groups.filter(name="Student").exists() and not user == users:
                 info = user.academic_info
+
                 posts = posts.filter(
-                    Q(years__year=info.year) |
-                    Q(majors=info.major) |
-                    Q(specializations=info.specialization)
-                ).distinct().order_by('-created_at')
+                    years=info.year,
+                    majors=info.major
+                )
+
+                if info.specialization:
+                    posts = posts.filter(
+                        Q(specializations=info.specialization) |
+                        Q(specializations__isnull=True)
+                    )
+                else:
+                    posts = posts.filter(specializations__isnull=True)
+
             context['posts'] = posts
 
 
