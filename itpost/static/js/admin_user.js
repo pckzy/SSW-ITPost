@@ -166,11 +166,11 @@ let userToDelete = null
 
 document.addEventListener('click', function (e) {
   if (e.target.matches('.confirmDelete-btn')) {
-      const deleteModal = document.getElementById('deleteUserModal');
-      userToDelete = e.target.getAttribute('data-user-id')
-      console.log(userToDelete)
-      deleteModal.classList.remove('hidden');
-      document.body.style.overflow = 'hidden';
+    const deleteModal = document.getElementById('deleteUserModal');
+    userToDelete = e.target.getAttribute('data-user-id')
+    console.log(userToDelete)
+    deleteModal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
   }
 });
 
@@ -185,43 +185,44 @@ function cancelDeleteUser() {
 
 function deleteUser() {
   const csrf = document.getElementById('csrfToken').value;
-  fetch(`/user/delete/${userToDelete}/`, {
+  fetch(`/api/user/delete/${userToDelete}/`, {
       method: 'POST',
       headers: {
-          'X-CSRFToken': csrf,
-          'Content-Type': 'application/json'
+        'X-CSRFToken': csrf,
+        'Content-Type': 'application/json'
       },
   })
   .then(res => res.json())
   .then(data => {
-      if (data.success) {
-          const userRow = document.getElementById(`user-${userToDelete}`);
-          const countEl = document.getElementById('UserCount');
-          if (!userRow | !countEl) return;
+    if (data.success) {
+      
+      const userRow = document.getElementById(`user-${userToDelete}`);
+      const countEl = document.getElementById('UserCount');
+      if (!userRow | !countEl) return;
 
-          // animation
-          const rowHeight = userRow.offsetHeight;
-          userRow.style.transition = 'opacity 0.5s ease, height 0.5s ease, padding 0.5s ease';
-          userRow.style.height = rowHeight + 'px';
-          userRow.style.opacity = '1';
+      // animation
+      const rowHeight = userRow.offsetHeight;
+      userRow.style.transition = 'opacity 0.5s ease, height 0.5s ease, padding 0.5s ease';
+      userRow.style.height = rowHeight + 'px';
+      userRow.style.opacity = '1';
 
-          userRow.offsetHeight;
+      userRow.offsetHeight;
 
-          userRow.style.opacity = '0';
-          userRow.style.height = '0';
-          userRow.style.paddingTop = '0';
-          userRow.style.paddingBottom = '0';
+      userRow.style.opacity = '0';
+      userRow.style.height = '0';
+      userRow.style.paddingTop = '0';
+      userRow.style.paddingBottom = '0';
 
-          
-          userRow.addEventListener('transitionend', () => {
-              userRow.remove();
-          }, { once: true });
+      
+      userRow.addEventListener('transitionend', () => {
+          userRow.remove();
+      }, { once: true });
 
-          let count = parseInt(countEl.textContent);
-          count = count - 1;
-          countEl.textContent = count;
-          cancelDeletUser();
-      }
+      let count = parseInt(countEl.textContent);
+      count = count - 1;
+      countEl.textContent = count;
+      cancelDeleteUser();
+    }
   })
   .catch(err => console.error(err));
 }
