@@ -149,6 +149,7 @@ class UserCreateView(LoginRequiredMixin, PermissionRequiredMixin, APIView):
             return Response({
                 'success': True,
                 'user': {
+                    'id': user.id,
                     'username': user.username,
                     'first_name': user.first_name,
                     'last_name': user.last_name,
@@ -169,4 +170,4 @@ class DeleteUserView(LoginRequiredMixin, PermissionRequiredMixin, APIView):
         except User.DoesNotExist:
             return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
         user.delete()
-        return Response({'success': True, 'message': 'Delete User'}, status=status.HTTP_200_OK)
+        return Response({'success': True, 'message': 'Delete User'}, status=status.HTTP_204_NO_CONTENT)

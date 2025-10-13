@@ -72,6 +72,7 @@ document.getElementById('createuser-forms').addEventListener('submit', function 
         userCount.innerText = u.count
         const newUser = document.createElement('tr');
         newUser.className = 'hover:bg-gray-50';
+        newUser.id = `user-${u.id}-table`;
         newUser.innerHTML = `
                         <td class="pl-5 px-3 py-4">
                             <a href="/profile/${u.username}/">
@@ -100,13 +101,14 @@ document.getElementById('createuser-forms').addEventListener('submit', function 
                                     <i class="fa-regular fa-pen-to-square text-yellow-500"></i>
                                 </a>
                                 <button class="text-red-600 hover:text-red-800 font-medium">
-                                    <i class="fa-solid fa-trash-can"></i>
+                                    <i data-user-id="${u.id}" class="confirmDelete-btn fa-solid fa-trash-can"></i>
                                 </button>
                             </div>
                         </td>
             `;
         const newUserDiv = document.createElement('div');
         newUserDiv.className = 'p-4 hover:bg-gray-50';
+        newUserDiv.id= `user-${u.id}-div`
         newUserDiv.innerHTML = `
                             <div class="flex items-start justify-between mb-3">
                               <div class="flex-1">
@@ -129,7 +131,7 @@ document.getElementById('createuser-forms').addEventListener('submit', function 
                           </div>
                           <div class="flex space-x-2">
                               <a href="/profile/edit/${u.username}/" class="flex-1 px-4 py-2 bg-yellow-100 text-yellow-700 text-center rounded-lg hover:bg-yellow-200 transition-all text-sm font-medium"><i class="fa-regular fa-pen-to-square text-yellow-500"></i> แก้ไข</a>
-                              <button class="flex-1 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-all text-sm font-medium"><i class="fa-solid fa-trash-can"></i> ลบ</button>
+                              <button data-user-id='${u.id}' class="confirmDelete-btn flex-1 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-all text-sm font-medium"><i class="fa-solid fa-trash-can"></i> ลบ</button>
                           </div>
         `
         const container = document.getElementById('userTable');
@@ -163,20 +165,26 @@ document.getElementById('createuser-forms').addEventListener('submit', function 
 });
 
 let userToDelete = null
+let nameToDelete = null
 
 document.addEventListener('click', function (e) {
   if (e.target.matches('.confirmDelete-btn')) {
     const deleteModal = document.getElementById('deleteUserModal');
+    const putName = document.getElementById('user-delete-name');
     userToDelete = e.target.getAttribute('data-user-id')
+    nameToDelete = e.target.getAttribute('data-user-name')
     console.log(userToDelete)
     deleteModal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
+
+    putName.innerText = nameToDelete;
   }
 });
 
 
 function cancelDeleteUser() {
   userToDelete = null;
+  nameToDelete = null;
   const deleteModal = document.getElementById('deleteUserModal');
   deleteModal.classList.add('hidden');
   document.body.style.overflow = 'auto';
@@ -196,8 +204,9 @@ function deleteUser() {
   .then(data => {
     if (data.success) {
       
-      const userRow = document.getElementById(`user-${userToDelete}`);
-      const countEl = document.getElementById('UserCount');
+      const userRow = document.getElementById(`user-${userToDelete}-table`);
+      const userDiv = document.getElementById(`user-${userToDelete}-div`);
+      const countEl = document.getElementById('userCount');
       if (!userRow | !countEl) return;
 
       // animation
@@ -213,6 +222,23 @@ function deleteUser() {
       userRow.style.paddingTop = '0';
       userRow.style.paddingBottom = '0';
 
+      if (userDiv) {
+        const divHeight = userDiv.offsetHeight;
+        userDiv.style.transition = 'opacity 0.5s ease, height 0.5s ease, padding 0.5s ease';
+        userDiv.style.height = divHeight + 'px';
+        userDiv.style.opacity = '1';
+
+        userDiv.offsetHeight;
+
+        userDiv.style.opacity = '0';
+        userDiv.style.height = '0';
+        userDiv.style.paddingTop = '0';
+        userDiv.style.paddingBottom = '0';
+
+        userDiv.addEventListener('transitionend', () => {
+          userDiv.remove();
+        }, { once: true });
+      }
       
       userRow.addEventListener('transitionend', () => {
           userRow.remove();

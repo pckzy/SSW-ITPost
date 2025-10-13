@@ -112,7 +112,7 @@
             <div class="divide-y divide-gray-200" id="userList">
                 <input type="hidden" name="csrfmiddlewaretoken" id="csrfToken" value="{{ csrf_token }}">
                 {% for u in users %}
-                    <div class="p-4 hover:bg-gray-50">
+                    <div class="p-4 hover:bg-gray-50" id="user-{{u.id}}-div">
                         <div class="flex items-start justify-between mb-3">
                             <div class="flex-1">
                                 <a href="{% url 'profile_view' u.username %}">
@@ -141,7 +141,9 @@
                         </div>
                         <div class="flex space-x-2">
                             <a href="{% url 'edit_profile_view' u.username %}" class="flex-1 px-4 py-2 bg-yellow-100 text-yellow-700 text-center rounded-lg hover:bg-yellow-200 transition-all text-sm font-medium"><i class="fa-regular fa-pen-to-square text-yellow-500"></i> แก้ไข</a>
-                            <button data-user-id="{{u.id}}" class="confirmDelete-btn flex-1 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-all text-sm font-medium"><i class="fa-solid fa-trash-can"></i> ลบ</button>
+                            {% if not u == user %}
+                            <button data-user-id="{{u.id}}" data-user-name="{{u.get_full_name}}" class="confirmDelete-btn flex-1 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-all text-sm font-medium"><i class="fa-solid fa-trash-can"></i> ลบ</button>
+                            {% endif %}
                         </div>
                     </div>
                 {% endfor %}
@@ -163,7 +165,7 @@
                 </thead>
                 <tbody class="divide-y divide-gray-200" id="userTable">
                     {% for u in users %}
-                    <tr class="hover:bg-gray-50">
+                    <tr class="hover:bg-gray-50" id="user-{{u.id}}-table">
                         <td class="pl-5 px-3 py-4">
                             <a href="{% url 'profile_view' u.username %}">
                                 <div class="flex items-center space-x-3">
@@ -197,7 +199,7 @@
                                 </a>
                                 {% if u != user %}
                                 <button class="text-red-600 hover:text-red-800 font-medium">
-                                    <i data-user-id="{{u.id}}" class="confirmDelete-btn fa-solid fa-trash-can"></i>
+                                    <i data-user-id="{{u.id}}" data-user-name="{{u.get_full_name}}" class="confirmDelete-btn fa-solid fa-trash-can"></i>
                                 </button>
                                 {% endif %}
                             </div>
@@ -219,7 +221,7 @@
                     </div>
                     <h3 class="text-xl font-semibold text-gray-800 mb-3">ลบผู้ใช้</h3>
                     <p class="text-gray-600 text-sm mb-6 leading-relaxed">
-                        คุณแน่ใจหรือไม่ที่จะลบผู้ใช้นี้? <br>
+                        คุณแน่ใจหรือไม่ที่จะลบผู้ใช้ <span id="user-delete-name"></span>? <br>
                         <span class="font-semibold text-red-600">ไม่สามารถกู้คืนได้</span>
                     </p>
                     
