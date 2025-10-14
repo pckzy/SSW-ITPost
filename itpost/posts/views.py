@@ -211,26 +211,6 @@ class StudentCourseView(LoginRequiredMixin, PermissionRequiredMixin, View):
         return render(request, 'student_course.html', context)
         
 
-class ManageCourseView(LoginRequiredMixin, PermissionRequiredMixin, View):
-    permission_required = 'posts.add_course'
-
-    def get(self, request):
-        request.session['return_to'] = request.path
-        context = get_user_context(request.user)
-        course_lists = Course.objects.filter(created_by=request.user).order_by('-created_at')
-
-        course_form = CourseForm()
-
-        context['course_form'] = course_form
-        context['course_lists'] = course_lists
-
-        context['year_choices'] = YearOption.objects.all()
-        context['major_choices'] = Major.objects.all()
-        context['specialization_choices'] = Specialization.objects.all()
-
-        return render(request, 'professor_page.html', context)
-    
-
 class ProfManageCourseView(LoginRequiredMixin, PermissionRequiredMixin, View):
     permission_required = 'posts.add_course'
 
@@ -367,8 +347,7 @@ class CourseDetailStudentView(LoginRequiredMixin, PermissionRequiredMixin, View)
 
         if user == course.created_by:
             enrollments = Enrollment.objects.filter(course=course)
-            # students = User.objects.filter(enrollments__course=course).distinct()
-            # context['students'] = students
+            
             context['course'] = course
             context['enrollments'] = enrollments
 

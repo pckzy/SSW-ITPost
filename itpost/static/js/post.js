@@ -154,14 +154,14 @@ function deletePost() {
                 const el = document.getElementById(`post-${postId}`);
                 if (el) {
 
-                    // fade out + slide up animation before removing
+                    
                     el.style.transition = 'opacity 400ms ease, transform 400ms ease, height 400ms ease, margin 400ms ease, padding 400ms ease';
                     el.style.opacity = '0';
                     el.style.transform = 'translateY(-12px)';
                     el.style.pointerEvents = 'none';
-                    // also collapse height to avoid gap
+                    
                     el.style.height = el.offsetHeight + 'px';
-                    // trigger reflow then set height to 0
+                    
                     void el.offsetHeight;
                     el.style.height = '0px';
                     el.style.marginBottom = '0px';

@@ -27,7 +27,7 @@ def update_query(request, **kwargs):
 
 @register.filter
 def time_since(value):
-    if not isinstance(value, timezone.datetime): # Check if value isn't a datetime
+    if not isinstance(value, timezone.datetime):
         return value
 
     now = timezone.now()

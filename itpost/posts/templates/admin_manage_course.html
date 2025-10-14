@@ -30,9 +30,9 @@
             {% csrf_token %}
 
             {% for c in course_lists %}
-            <div class="p-6 border-2 border-gray-200 rounded-xl hover:border-blue-400 hover:shadow-lg transition-all" id="course-{{ c.id }}-div">
+            <div class="p-6 border-2 border-gray-200 rounded-xl {% cycle 'hover:border-purple-400' 'hover:border-pink-400' 'hover:border-rose-400' %} hover:shadow-lg transition-all" id="course-{{ c.id }}-div">
                 <div class="flex justify-between items-start mb-4">
-                    <span class="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full">{{ c.course_code }}</span>
+                    <span class="{% cycle 'bg-purple-100 text-purple-700' 'bg-pink-100 text-pink-700' 'bg-rose-100 text-rose-700' %} text-xs font-bold px-3 py-1 rounded-full">{{ c.course_code }}</span>
                 </div>
                 <h3 class="text-xl font-semibold text-gray-800 mb-2">{{ c.course_name }}</h3>
                 <p class="text-gray-600 text-sm mb-4">{{ c.description }}</p>
@@ -50,7 +50,7 @@
 
                 <div class="flex space-x-2">
                     <a href="{% url 'course_detail' c.course_code %}"
-                        class="flex flex-1 justify-center items-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all text-sm font-medium">
+                        class="flex flex-1 justify-center items-center text-white px-4 py-2 rounded-lg {% cycle 'bg-purple-600 hover:bg-purple-700' 'bg-pink-600 hover:bg-pink-700' 'bg-rose-600 hover:bg-rose-700' %} transition-all text-sm font-medium">
                         ดูรายละเอียด
                     </a>
                     <a href="{% url 'course_edit_view' c.id %}"

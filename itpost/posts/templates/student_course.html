@@ -162,7 +162,7 @@
                                 </div>
                             </div>
                         </div>
-                        <button onclick="openModal(this)" data-course-id="{{ ac.id }}" class="w-full bg-{{ac.color}}-600 text-white px-4 py-2.5 rounded-lg hover:bg-{{ac.color}}-700 transition-all font-medium flex items-center justify-center space-x-2">
+                        <button onclick="openModal(this)" data-course-id="{{ ac.id }}" data-course-name="{{ ac.course_name }}" class="w-full bg-{{ac.color}}-600 text-white px-4 py-2.5 rounded-lg hover:bg-{{ac.color}}-700 transition-all font-medium flex items-center justify-center space-x-2">
                             <i class="fa-solid fa-plus"></i>
                             <span>ลงทะเบียน</span>
                         </button>
@@ -197,7 +197,7 @@
                     </div>
                     <h3 class="text-xl font-semibold text-gray-800 mb-3">ยืนยันการลงทะเบียน</h3>
                     <p class="text-gray-600 text-sm mb-6 leading-relaxed">
-                        คุณต้องการลงทะเบียนในคอร์สนี้
+                        คุณต้องการลงทะเบียนในคอร์ส <span class="font-semibold" id="course-name"></span>
                         ใช่หรือไม่
                     </p>
                     

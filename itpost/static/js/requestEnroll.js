@@ -1,8 +1,12 @@
 let courseId = null
+let courseName = null
 
 function openModal(btnElement) {
     const enrollModal = document.getElementById('enrollModal');
+    const setCourseName = document.getElementById('course-name');
     courseId = btnElement.getAttribute('data-course-id')
+    courseName = btnElement.getAttribute('data-course-name')
+    setCourseName.innerText = courseName
     console.log(courseId)
     enrollModal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
@@ -11,6 +15,7 @@ function openModal(btnElement) {
 
 function cancelEnrollCourse() {
     courseId = null;
+    courseName = null;
     const enrollModal = document.getElementById('enrollModal');
     enrollModal.classList.add('hidden');
     document.body.style.overflow = 'auto';

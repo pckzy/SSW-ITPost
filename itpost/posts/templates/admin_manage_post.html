@@ -181,7 +181,7 @@
             <div class="divide-y divide-gray-200">
 
                 {% for post in posts %}
-                    <div class="p-4 hover:bg-gray-50">
+                    <div class="p-4 hover:bg-gray-200 {% cycle 'bg-gray-50' 'bg-gray-100' %}">
                         <div class="flex items-start justify-between mb-3">
                             <div class="flex-1">
                                 <a href="{% url 'profile_view' post.created_by.username %}">
@@ -241,7 +241,7 @@
                 <tbody class="divide-y divide-gray-200">
                     <input type="hidden" name="csrfmiddlewaretoken" id="csrfToken" value="{{ csrf_token }}">
                     {% for post in posts %}
-                    <tr id="post-{{ post.id }}" class="hover:bg-gray-50">
+                    <tr id="post-{{ post.id }}" class="hover:bg-gray-200 {% cycle 'bg-gray-50' 'bg-gray-100' %}">
                         <td class="pl-6 px-3 py-4 text-sm text-gray-600">{{ post.title|truncatechars:20 }}</td>
                         <td class="px-3 py-4 text-sm text-gray-600">{% if post.annonymous %}ไม่ระบุตัวตน{% else %} <a href="{% url 'profile_view' post.created_by.username %}" class="font-semibold">{{ post.created_by.get_full_name }}</a> {% endif %}</td>
                         <td class="px-3 py-4 text-sm text-gray-600">

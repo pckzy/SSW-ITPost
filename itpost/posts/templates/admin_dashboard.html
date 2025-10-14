@@ -112,7 +112,7 @@
             <div class="divide-y divide-gray-200" id="userList">
                 <input type="hidden" name="csrfmiddlewaretoken" id="csrfToken" value="{{ csrf_token }}">
                 {% for u in users %}
-                    <div class="p-4 hover:bg-gray-50" id="user-{{u.id}}-div">
+                    <div class="p-4 hover:bg-gray-200 {% cycle 'bg-gray-50' 'bg-gray-100' %}" id="user-{{u.id}}-div">
                         <div class="flex items-start justify-between mb-3">
                             <div class="flex-1">
                                 <a href="{% url 'profile_view' u.username %}">
@@ -165,7 +165,7 @@
                 </thead>
                 <tbody class="divide-y divide-gray-200" id="userTable">
                     {% for u in users %}
-                    <tr class="hover:bg-gray-50" id="user-{{u.id}}-table">
+                    <tr class="hover:bg-gray-200 {% cycle 'bg-gray-50' 'bg-gray-100' %}" id="user-{{u.id}}-table">
                         <td class="pl-5 px-3 py-4">
                             <a href="{% url 'profile_view' u.username %}">
                                 <div class="flex items-center space-x-3">
@@ -221,7 +221,7 @@
                     </div>
                     <h3 class="text-xl font-semibold text-gray-800 mb-3">ลบผู้ใช้</h3>
                     <p class="text-gray-600 text-sm mb-6 leading-relaxed">
-                        คุณแน่ใจหรือไม่ที่จะลบผู้ใช้ <span id="user-delete-name"></span>? <br>
+                        คุณแน่ใจหรือไม่ที่จะลบผู้ใช้ <span class="font-semibold" id="user-delete-name"></span>? <br>
                         <span class="font-semibold text-red-600">ไม่สามารถกู้คืนได้</span>
                     </p>
                     

@@ -73,7 +73,7 @@
 
      <div class="space-y-6">
         
-            <div class="bg-orange-500 rounded-2xl shadow-2xl p-8 text-white">
+            <div class="bg-gradient-to-b from-blue-700 to-blue-500 rounded-2xl shadow-2xl p-8 text-white">
                 <div class="flex justify-between">
                     <div class="flex items-center space-x-6 mb-4">
                         <i class="fa-solid fa-bullhorn text-5xl"></i>
@@ -83,7 +83,7 @@
                         </div>
                     </div>
                     <a href="{% url 'student_create_post' %}"
-                        class="bg-white text-orange-400 px-6 py-3 rounded-lg font-medium hover:bg-indigo-50 transition-all flex items-center md:space-x-2">
+                        class="bg-white text-blue-600 px-6 py-3 rounded-lg font-medium hover:bg-indigo-50 transition-all flex items-center md:space-x-2">
                         <i class="fa-solid fa-plus"></i>
                         <span class="hidden md:block">สร้างประกาศใหม่</span>
                     </a>
@@ -98,10 +98,10 @@
                         <span class="text-gray-700 font-medium">กรองตามประเภท:</span>
                     </div>
                     <div class="flex flex-wrap gap-2">
-                        <a href="?filter=" class="{% if not request.GET.filter or request.GET.filter == '' %}bg-indigo-100 text-indigo-700 hover:bg-blue-200{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %} px-4 py-2 rounded-lg text-sm font-medium transition-all">ทั้งหมด</a>
-                        <a href="?filter=1" class="{% if request.GET.filter == '1' %}bg-indigo-100 text-indigo-700 hover:bg-blue-200{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %} px-4 py-2 rounded-lg text-sm font-medium transition-all">ประกาศสำคัญ</a>
-                        <a href="?filter=2" class="{% if request.GET.filter == '2' %}bg-indigo-100 text-indigo-700 hover:bg-blue-200{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %} px-4 py-2 rounded-lg text-sm font-medium transition-all">กิจกรรม</a>
-                        <a href="?filter=3" class="{% if request.GET.filter == '3' %}bg-indigo-100 text-indigo-700 hover:bg-blue-200{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %} px-4 py-2 rounded-lg text-sm font-medium transition-all">พูดคุย</a>
+                        <a href="?filter=" class="{% if not request.GET.filter or request.GET.filter == '' %}bg-blue-100 text-blue-700 hover:bg-blue-200{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %} px-4 py-2 rounded-lg text-sm font-medium transition-all">ทั้งหมด</a>
+                        <a href="?filter=1" class="{% if request.GET.filter == '1' %}bg-blue-100 text-blue-700 hover:bg-blue-200{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %} px-4 py-2 rounded-lg text-sm font-medium transition-all">ประกาศสำคัญ</a>
+                        <a href="?filter=2" class="{% if request.GET.filter == '2' %}bg-blue-100 text-blue-700 hover:bg-blue-200{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %} px-4 py-2 rounded-lg text-sm font-medium transition-all">กิจกรรม</a>
+                        <a href="?filter=3" class="{% if request.GET.filter == '3' %}bg-blue-100 text-blue-700 hover:bg-blue-200{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %} px-4 py-2 rounded-lg text-sm font-medium transition-all">พูดคุย</a>
                     </div>
                 </div>
             </div>
