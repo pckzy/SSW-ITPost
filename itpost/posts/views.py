@@ -542,14 +542,16 @@ class EditProfileView(LoginRequiredMixin, View):
                     valid_user = valid_profile = valid_academic = False
 
             if valid_user and valid_profile and valid_academic:
-                
                 user_form.save()
                 profile_form.save()
                 if academic_form:
                     academic_form.save()
                 
-                return redirect('profile_view', username=users.username)
-            
+                if not request.user.is_staff:
+                    return redirect('profile_view', username=users.username)
+                else:
+                    return redirect('admin_view')
+
             context['users'] = users
             context['password_form'] = password_form
             context['user_form'] = user_form

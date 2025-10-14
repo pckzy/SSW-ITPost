@@ -67,6 +67,9 @@ class CustomUserCreationForm(UserCreationForm):
         if email and not email.endswith('@kmitl.ac.th'):
             raise forms.ValidationError("อีเมลสถาบันเท่านั้น")
 
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError("อีเมลนี้ถูกใช้งานแล้ว")
+
         return email
     
     def clean_username(self):
@@ -77,6 +80,18 @@ class CustomUserCreationForm(UserCreationForm):
             raise forms.ValidationError('รหัสนักศึกษาเท่านั้น')
 
         return username
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        email = cleaned_data.get('email')
+        username = cleaned_data.get('username')
+
+        if email and username:
+            expected_email = f"{username}@kmitl.ac.th"
+            if email != expected_email:
+                self.add_error('email', 'อีเมลต้องตรงกับรหัสนักศึกษา')
+
+        return cleaned_data
 
 
 class AcademicInfoForm(forms.ModelForm):
@@ -242,6 +257,10 @@ class UserUpdateForm(forms.ModelForm):
         if email and not email.endswith('@kmitl.ac.th'):
             raise forms.ValidationError("อีเมลสถาบันเท่านั้น")
         
+        if self.instance and self.instance.pk:
+            if User.objects.filter(email=email).exclude(pk=self.instance.pk).exists():
+                raise forms.ValidationError("อีเมลนี้ถูกใช้งานแล้ว")
+        
         return email
     
     def clean_username(self):
@@ -254,11 +273,23 @@ class UserUpdateForm(forms.ModelForm):
         if qs.exists():
             raise forms.ValidationError("ชื่อผู้ใช้นี้มีอยู่แล้วในระบบ")
 
-        if not self.instance.groups.filter(name="Professor").exists():
+        if self.instance.groups.filter(name="Student").exists():
             if not re.match(pattern, username):
                 raise forms.ValidationError('รหัสนักศึกษาเท่านั้น')
 
         return username
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        username = cleaned_data.get('username')
+        email = cleaned_data.get('email')
+
+        if username and email:
+            expected_email = f"{username}@kmitl.ac.th"
+            if email != expected_email:
+                self.add_error('email', 'อีเมลต้องตรงกับรหัสนักศึกษา')
+
+        return cleaned_data
 
 class AcademicUpdateForm(forms.ModelForm):
     class Meta:
