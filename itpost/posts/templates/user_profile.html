@@ -226,7 +226,13 @@
                             </div>
                             {% empty %}
                             <div class="text-center py-3">
-                                <p class="text-gray-500 text-lg">ยังไม่มีคอร์สที่ลงทะเบียนไว้</p>
+                                <p class="text-gray-500 text-lg">
+                                    {% if users|in_group:"Student" %}
+                                        <span>ยังไม่มีคอร์สที่ลงทะเบียนไว้</span>
+                                    {% elif users|in_group:"Professor" %}
+                                        <span>ยังไม่มีคอร์สเรียนที่สร้างไว้</span>
+                                    {% endif %}
+                                </p>
                             </div>
                             {% endfor %}
                         </div>
