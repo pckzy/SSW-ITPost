@@ -27,9 +27,10 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% csrf_token %}
 
             {% for c in course_lists %}
-            <div class="p-6 border-2 border-gray-200 rounded-xl hover:border-blue-400 hover:shadow-lg transition-all">
+            <div class="p-6 border-2 border-gray-200 rounded-xl hover:border-blue-400 hover:shadow-lg transition-all" id="course-{{ c.id }}-div">
                 <div class="flex justify-between items-start mb-4">
                     <span class="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full">{{ c.course_code }}</span>
                 </div>
@@ -57,7 +58,7 @@
                         <i class="fa-regular fa-pen-to-square text-gray-600"></i>
                     </a>
                     <button class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all">
-                        <i class="fa-regular fa-trash-can text-red-600"></i>
+                        <i data-course-id="{{ c.id }}" data-course-name="{{ c.course_name }}" class="confirmDelete-btn fa-regular fa-trash-can text-red-600"></i>
                     </button>
                 </div>
             </div>
@@ -91,7 +92,34 @@
 
 </div>
 
-
+<div id="deleteCourseModal" class="fixed inset-0 z-60 hidden">  
+        <div class="modal-overlay absolute inset-0 bg-black opacity-60"></div>
+        <div class="relative z-10 flex items-center justify-center min-h-screen p-4">
+            <div class="modal-content bg-white rounded-2xl shadow-2xl w-full max-w-md">
+                <div class="p-6 text-center">
+                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-exclamation-triangle text-red-500 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-3">ลบคอร์สเรียน</h3>
+                    <p class="text-gray-600 text-sm mb-6 leading-relaxed">
+                        คุณแน่ใจหรือไม่ที่จะลบคอร์สเรียน <span id="course-delete-name"></span> นี้? <br>
+                        <span class="font-semibold text-red-600">ไม่สามารถกู้คืนได้</span>
+                    </p>
+                    
+                    <div class="flex gap-3">
+                        <button onclick="cancelDeleteCourse()" 
+                                class="flex-1 px-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors cursor-pointer">
+                            ยกเลิก
+                        </button>
+                        <button onclick="deleteCourse()" 
+                                class="flex-1 px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition-colors cursor-pointer">
+                            ลบคอร์สเรียน
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
 {% endblock %}
 

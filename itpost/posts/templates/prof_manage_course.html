@@ -121,7 +121,7 @@
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="coursesList">
                 {% for ac in course_lists %}
-                <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all overflow-hidden border-t-4 border-{{ac.color}}-500">
+                <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all overflow-hidden border-t-4 border-{{ac.color}}-500" id="course-{{ ac.id }}-div">
                     <div class="p-6">
                         <div class="mb-3 flex justify-between">
                             <span class="bg-{{ac.color}}-100 text-{{ac.color}}-700 text-xs font-bold px-3 py-1 rounded-full">{{ ac.course_code }}</span>
@@ -161,7 +161,7 @@
                                 <i class="fa-regular fa-pen-to-square text-gray-600"></i>
                             </a>
                             <button class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all">
-                                <i class="fa-regular fa-trash-can text-red-600"></i>
+                                <i data-course-id="{{ ac.id }}" data-course-name="{{ ac.course_name }}" class="confirmDelete-btn fa-regular fa-trash-can text-red-600"></i>
                             </button>
                         </div>
                     </div>
@@ -180,6 +180,35 @@
 
     
 </div>
+
+<div id="deleteCourseModal" class="fixed inset-0 z-60 hidden">  
+        <div class="modal-overlay absolute inset-0 bg-black opacity-60"></div>
+        <div class="relative z-10 flex items-center justify-center min-h-screen p-4">
+            <div class="modal-content bg-white rounded-2xl shadow-2xl w-full max-w-md">
+                <div class="p-6 text-center">
+                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-exclamation-triangle text-red-500 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-3">ลบคอร์สเรียน</h3>
+                    <p class="text-gray-600 text-sm mb-6 leading-relaxed">
+                        คุณแน่ใจหรือไม่ที่จะลบคอร์สเรียน <span id="course-delete-name"></span> นี้? <br>
+                        <span class="font-semibold text-red-600">ไม่สามารถกู้คืนได้</span>
+                    </p>
+                    
+                    <div class="flex gap-3">
+                        <button onclick="cancelDeleteCourse()" 
+                                class="flex-1 px-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors cursor-pointer">
+                            ยกเลิก
+                        </button>
+                        <button onclick="deleteCourse()" 
+                                class="flex-1 px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition-colors cursor-pointer">
+                            ลบคอร์สเรียน
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block script%}
@@ -223,6 +252,7 @@ document.getElementById('course-forms').addEventListener('submit', function (e) 
             const container = document.getElementById('coursesList');
             const newCourse = document.createElement('div');
             newCourse.className = 'bg-white rounded-xl shadow-lg hover:shadow-xl transition-all overflow-hidden border-t-4 border-blue-500';
+            newCourse.id = `course-${data.course.id}-div`
             newCourse.innerHTML = `
                 <div class="p-6">
                     <div class="flex justify-between items-start mb-4">
@@ -252,11 +282,11 @@ document.getElementById('course-forms').addEventListener('submit', function (e) 
                         <a href="/course/${data.course.course_code}/" class="flex flex-1 justify-center items-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all text-sm font-medium">
                             ดูรายละเอียด
                         </a>
-                        <a href="manage_course/edit_course/${data.course.id}/" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all">
+                        <a href="/manage_course/edit_course/${data.course.id}/" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all">
                             <i class="fa-regular fa-pen-to-square text-gray-600"></i>
                         </a>
                         <button class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all">
-                            <i class="fa-regular fa-trash-can text-red-600"></i>
+                            <i data-course-id="${data.course.id}" data-course-name="${data.course.title}" class="confirmDelete-btn fa-regular fa-trash-can text-red-600"></i>
                         </button>
                     </div>
                 </div>
@@ -270,5 +300,72 @@ document.getElementById('course-forms').addEventListener('submit', function (e) 
         }
     });
 });
+
+
+
+let courseToDelete = null
+let nameToDelete = null
+
+document.addEventListener('click', function (e) {
+  if (e.target.matches('.confirmDelete-btn')) {
+    const deleteModal = document.getElementById('deleteCourseModal');
+    const putName = document.getElementById('course-delete-name');
+    courseToDelete = e.target.getAttribute('data-course-id')
+    nameToDelete = e.target.getAttribute('data-course-name')
+    console.log(courseToDelete)
+    deleteModal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+
+    putName.innerText = nameToDelete;
+  }
+});
+
+
+function cancelDeleteCourse() {
+  courseToDelete = null;
+  nameToDelete = null;
+  const deleteModal = document.getElementById('deleteCourseModal');
+  deleteModal.classList.add('hidden');
+  document.body.style.overflow = 'auto';
+}
+
+
+function deleteCourse() {
+  fetch(`/api/course/${courseToDelete}/`, {
+      method: 'DELETE',
+      headers: {
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        'Content-Type': 'application/json'
+      },
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      
+      const courseDiv = document.getElementById(`course-${courseToDelete}-div`);
+
+      if (courseDiv) {
+        const divHeight = courseDiv.offsetHeight;
+        courseDiv.style.transition = 'opacity 0.5s ease, height 0.5s ease, padding 0.5s ease';
+        courseDiv.style.height = divHeight + 'px';
+        courseDiv.style.opacity = '1';
+
+        courseDiv.offsetHeight;
+
+        courseDiv.style.opacity = '0';
+        courseDiv.style.height = '0';
+        courseDiv.style.paddingTop = '0';
+        courseDiv.style.paddingBottom = '0';
+
+        courseDiv.addEventListener('transitionend', () => {
+          courseDiv.remove();
+        }, { once: true });
+      }
+
+      cancelDeleteCourse();
+    }
+  })
+  .catch(err => console.error(err));
+}
 </script>
 {% endblock %}

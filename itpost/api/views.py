@@ -171,3 +171,15 @@ class DeleteUserView(LoginRequiredMixin, PermissionRequiredMixin, APIView):
             return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
         user.delete()
         return Response({'success': True, 'message': 'Delete User'}, status=status.HTTP_200_OK)
+    
+
+class CourseView(LoginRequiredMixin, PermissionRequiredMixin, APIView):
+    permission_required = 'posts.delete_course'
+
+    def delete(self, request, course_id):
+        try:
+            course = Course.objects.get(pk=course_id)
+        except Course.DoesNotExist:
+            return Response({'error': 'Course not found'}, status=status.HTTP_404_NOT_FOUND)
+        course.delete()
+        return Response({'success': True, 'message': 'Deleted Course'}, status=status.HTTP_200_OK)

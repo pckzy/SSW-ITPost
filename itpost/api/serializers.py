@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from posts.models import Course, Comment, Enrollment
+from posts.models import Course, Comment, Enrollment, Profile
 from django.contrib.auth.models import User, Group
 from django import forms
 from django.utils.timesince import timesince
@@ -79,5 +79,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
         group = Group.objects.get(name=group_name)
         user.groups.add(group)
+
+        Profile.objects.create(user=user)
 
         return user

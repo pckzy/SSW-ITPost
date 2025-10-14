@@ -24,7 +24,6 @@ def back(request):
 
 class MainView(LoginRequiredMixin, View):
     def get(self, request):
-        context = get_user_context(request.user)
         user = request.user
 
         if user.groups.filter(name="Professor").exists():
@@ -92,7 +91,7 @@ class StudentCreatePostView(LoginRequiredMixin, PermissionRequiredMixin, View):
             
             post = form.save(commit=False)
             post.created_by = request.user
-            if user.groups.filter(name="Professor").exists():
+            if not user.groups.filter(name="Student").exists():
                 post.status = 'approved'
             post.save()
             form.save_m2m()
@@ -131,6 +130,8 @@ class EditPostView(LoginRequiredMixin, PermissionRequiredMixin, View):
         return render(request, 'edit_post.html', context)
 
     def post(self, request, post_id):
+        user = request.user
+        context = get_user_context(user)
         post = Post.objects.get(pk=post_id)
         if post.course:
             form = ProfessorPostForm(request.POST, request.FILES, instance=post, is_edit=True)
@@ -157,7 +158,6 @@ class EditPostView(LoginRequiredMixin, PermissionRequiredMixin, View):
                 return redirect('student_view')
         
         print(form.errors)
-        context = {}
         context['form'] = form
         context['post'] = post
         return render(request, 'edit_post.html', context)
@@ -423,6 +423,8 @@ class RegisterView(View):
             academic = academic_form.save(commit=False)
             academic.user = user
             academic.save()
+
+            Profile.objects.create(user=user)
 
             return redirect('login_view')
         else:

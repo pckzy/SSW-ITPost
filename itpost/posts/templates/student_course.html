@@ -13,7 +13,7 @@
 {% block content %}
 <div class="container mx-auto px-4 py-8">
     
-    <div class="bg-blue-600 rounded-2xl shadow-2xl p-8 mb-8 text-white">
+    <div class="bg-blue-700 rounded-2xl shadow-2xl p-8 mb-8 text-white">
         <div class="flex flex-col lg:flex-row justify-between gap-6">
             <div class="flex-1">
                 <h2 class="text-3xl font-bold mb-2">สวัสดี, {{user.first_name}}! 👋</h2>
@@ -21,12 +21,12 @@
                 </p>
                 <div class="flex flex-wrap gap-3">
                     <div class="bg-[rgba(255,255,255,0.2)] px-4 py-2 rounded-lg">
-                        <div class="text-sm text-blue-100">วิชาที่ลงทะเบียน</div>
-                        <div class="text-2xl font-bold">{{enrolled_courses.count}} วิชา</div>
+                        <div class="text-sm text-blue-100">วิชาที่ลงทะเบียนแล้ว</div>
+                        <div id="enrolled-count" class="text-2xl font-bold">{{enrolled_courses.count}} วิชา</div>
                     </div>
                     <div class="bg-[rgba(255,255,255,0.2)] px-4 py-2 rounded-lg">
-                        <div class="text-sm text-blue-100">ประกาศทั้งหมด</div>
-                        <div class="text-2xl font-bold">5 รายการ</div>
+                        <div class="text-sm text-blue-100">วิชาที่เปิดให้ลงทะเบียนทั้งหมด</div>
+                        <div id="available-count" class="text-2xl font-bold">{{ available_courses.count }} วิชา</div>
                     </div>
                 </div>
             </div>
